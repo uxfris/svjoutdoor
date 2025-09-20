@@ -1,0 +1,147 @@
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import { createClient } from "@/lib/supabase/server";
+
+export default async function DashboardPage() {
+  const supabase = createClient();
+
+  // Get dashboard statistics
+  const [
+    { count: totalProducts },
+    { count: totalSales },
+    { count: totalMembers },
+    { data: recentSales },
+  ] = await Promise.all([
+    supabase.from("produk").select("*", { count: "exact", head: true }),
+    supabase.from("penjualan").select("*", { count: "exact", head: true }),
+    supabase.from("member").select("*", { count: "exact", head: true }),
+    supabase
+      .from("penjualan")
+      .select(
+        `
+        *,
+        member:member(nama),
+        penjualan_detail(
+          id_produk,
+          jumlah,
+          subtotal,
+          produk:produk(nama_produk)
+        )
+      `
+      )
+      .order("created_at", { ascending: false })
+      .limit(5),
+  ]);
+
+  const stats = [
+    {
+      name: "Total Products",
+      value: totalProducts || 0,
+      icon: "📦",
+      color: "bg-blue-500",
+    },
+    {
+      name: "Total Sales",
+      value: totalSales || 0,
+      icon: "💰",
+      color: "bg-green-500",
+    },
+    {
+      name: "Total Members",
+      value: totalMembers || 0,
+      icon: "👥",
+      color: "bg-purple-500",
+    },
+  ];
+
+  return (
+    <DashboardLayout>
+      <div className="p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600">
+            Overview of your point of sales system
+          </p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {stats.map((stat) => (
+            <div
+              key={stat.name}
+              className="bg-white rounded-lg shadow p-6 border border-gray-200"
+            >
+              <div className="flex items-center">
+                <div
+                  className={`${stat.color} rounded-lg p-3 text-white text-2xl`}
+                >
+                  {stat.icon}
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">
+                    {stat.name}
+                  </p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {stat.value.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Recent Sales */}
+        <div className="bg-white rounded-lg shadow border border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Recent Sales
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Sale ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Member
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total Items
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {recentSales?.map((sale) => (
+                  <tr key={sale.id_penjualan}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      #{sale.id_penjualan}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {sale.member?.nama || "Walk-in Customer"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {sale.total_item}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      Rp {sale.total_harga.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(sale.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
