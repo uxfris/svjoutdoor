@@ -131,8 +131,12 @@ export class PrintService {
         doc.setFont("helvetica", "normal");
         doc.setTextColor(220, 38, 38); // Red color
         doc.setFontSize(8);
+        const discountAmount =
+          item.discount_type === "percentage"
+            ? (item.harga_jual * item.diskon) / 100
+            : item.diskon;
         doc.text(
-          `Discount: -Rp ${item.diskon.toLocaleString()}${
+          `Discount: -Rp ${discountAmount.toLocaleString()}${
             item.discount_type === "percentage" ? ` (${item.diskon}%)` : ""
           }`,
           20,
@@ -156,7 +160,10 @@ export class PrintService {
     doc.text(`Rp ${data.total_harga.toLocaleString()}`, 170, yPosition);
     yPosition += 5;
 
-    const discountAmount = data.diskon;
+    const discountAmount =
+      data.discount_type === "percentage"
+        ? (data.total_harga * data.diskon) / 100
+        : data.diskon;
 
     doc.text(
       `Discount: ${
@@ -300,7 +307,11 @@ export class PrintService {
                 ? `
             <tr>
               <td style="padding: 1px 0; font-size: 10px; color: #dc2626;">
-                Discount: -${formatCurrency(item.diskon)}${
+                Discount: -${formatCurrency(
+                  item.discount_type === "percentage"
+                    ? (item.harga_jual * item.diskon) / 100
+                    : item.diskon
+                )}${
                     item.discount_type === "percentage"
                       ? ` (${item.diskon}%)`
                       : ""
@@ -338,7 +349,10 @@ export class PrintService {
             <td class="right">${
               data.diskon > 0
                 ? data.discount_type === "percentage"
-                  ? `- Rp ${data.diskon.toLocaleString()} (${data.diskon}%)`
+                  ? `- Rp ${(
+                      (data.total_harga * data.diskon) /
+                      100
+                    ).toLocaleString()} (${data.diskon}%)`
                   : `- Rp ${data.diskon.toLocaleString()}`
                 : "Rp 0"
             }</td>

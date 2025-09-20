@@ -518,6 +518,7 @@ export default function DashboardPage() {
           total_item,
           total_harga,
           diskon,
+          discount_type,
           bayar,
           diterima,
           payment_method,
@@ -561,6 +562,7 @@ export default function DashboardPage() {
           harga_jual,
           jumlah,
           diskon,
+          discount_type,
           subtotal,
           kategori(nama_kategori)
         `
@@ -580,6 +582,7 @@ export default function DashboardPage() {
           harga_jual: item.harga_jual,
           jumlah: item.jumlah,
           diskon: item.diskon,
+          discount_type: item.discount_type,
           subtotal: item.subtotal,
         })) || [];
 

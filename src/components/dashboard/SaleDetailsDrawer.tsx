@@ -8,6 +8,7 @@ interface SaleDetail {
   total_item: number;
   total_harga: number;
   diskon: number;
+  discount_type: "percentage" | "amount";
   bayar: number;
   diterima: number;
   payment_method: string;
@@ -20,6 +21,7 @@ interface SaleDetail {
     harga_jual: number;
     jumlah: number;
     diskon: number;
+    discount_type: "percentage" | "amount";
     subtotal: number;
   }[];
 }
@@ -165,7 +167,13 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                               </span>
                               {item.diskon > 0 && (
                                 <span className="text-red-600">
-                                  Discount: -Rp {item.diskon.toLocaleString()}
+                                  Discount: -Rp{" "}
+                                  {item.discount_type === "percentage"
+                                    ? (
+                                        (item.harga_jual * item.diskon) /
+                                        100
+                                      ).toLocaleString()
+                                    : item.diskon.toLocaleString()}
                                   {item.discount_type === "percentage" && (
                                     <span className="text-xs text-gray-500 ml-1">
                                       ({item.diskon}%)
@@ -203,7 +211,14 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                           Discount:
                         </span>
                         <span className="text-red-600">
-                          - Rp {selectedSale.diskon.toLocaleString()}
+                          - Rp{" "}
+                          {selectedSale.discount_type === "percentage"
+                            ? (
+                                (selectedSale.total_harga *
+                                  selectedSale.diskon) /
+                                100
+                              ).toLocaleString()
+                            : selectedSale.diskon.toLocaleString()}
                           {selectedSale.discount_type === "percentage" && (
                             <span className="text-sm text-gray-500 ml-1">
                               ({selectedSale.diskon}%)

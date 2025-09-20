@@ -100,7 +100,10 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                   Discount
                 </label>
                 <p className="text-lg font-semibold text-red-600">
-                  -Rp {sale.diskon.toLocaleString()}
+                  -Rp{" "}
+                  {sale.discount_type === "percentage"
+                    ? ((sale.total_harga * sale.diskon) / 100).toLocaleString()
+                    : sale.diskon.toLocaleString()}
                   {sale.discount_type === "percentage" && (
                     <span className="text-sm text-gray-500 ml-1">
                       ({sale.diskon}%)
@@ -172,7 +175,13 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {item.diskon > 0 ? (
                         <div className="text-red-600">
-                          - Rp {item.diskon.toLocaleString()}
+                          - Rp{" "}
+                          {item.discount_type === "percentage"
+                            ? (
+                                (item.kategori?.harga_jual * item.diskon) /
+                                100
+                              ).toLocaleString()
+                            : item.diskon.toLocaleString()}
                           {item.discount_type === "percentage" && (
                             <span className="text-xs text-gray-500 ml-1">
                               ({item.diskon}%)

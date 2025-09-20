@@ -717,7 +717,7 @@ export default function TransactionCompletePage() {
                 Items Sold
               </h2>
               <div className="ml-auto">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white bg-opacity-20 text-white">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white bg-opacity-20 text-black">
                   {saleData.items.length} item
                   {saleData.items.length !== 1 ? "s" : ""}
                 </span>
@@ -873,7 +873,13 @@ export default function TransactionCompletePage() {
                           </div>
                           <div>
                             <div className="text-sm font-semibold text-red-600">
-                              - Rp {item.diskon.toLocaleString()}
+                              - Rp{" "}
+                              {item.discount_type === "percentage"
+                                ? (
+                                    (item.harga_jual * item.diskon) /
+                                    100
+                                  ).toLocaleString()
+                                : item.diskon.toLocaleString()}
                             </div>
                             {item.discount_type === "percentage" && (
                               <div className="text-xs text-red-500">
