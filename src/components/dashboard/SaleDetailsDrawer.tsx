@@ -164,8 +164,13 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                                 Price: Rp {item.harga_jual.toLocaleString()}
                               </span>
                               {item.diskon > 0 && (
-                                <span>
-                                  Discount: Rp {item.diskon.toLocaleString()}
+                                <span className="text-red-600">
+                                  Discount: -Rp {item.diskon.toLocaleString()}
+                                  {item.discount_type === "percentage" && (
+                                    <span className="text-xs text-gray-500 ml-1">
+                                      ({item.diskon}%)
+                                    </span>
+                                  )}
                                 </span>
                               )}
                             </div>
@@ -197,8 +202,13 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                         <span className="text-[var(--framer-color-text-secondary)]">
                           Discount:
                         </span>
-                        <span className="text-[var(--framer-color-text)]">
+                        <span className="text-red-600">
                           - Rp {selectedSale.diskon.toLocaleString()}
+                          {selectedSale.discount_type === "percentage" && (
+                            <span className="text-sm text-gray-500 ml-1">
+                              ({selectedSale.diskon}%)
+                            </span>
+                          )}
                         </span>
                       </div>
                     )}

@@ -84,28 +84,46 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--gray-100);
-  border-radius: var(--radius-sm);
+  background: #f3f4f6; /* gray-100 equivalent */
+  border-radius: 6px; /* equivalent to --framer-radius-sm */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--gray-300);
-  border-radius: var(--radius-sm);
+  background: #d1d5db; /* gray-300 equivalent */
+  border-radius: 6px; /* equivalent to --framer-radius-sm */
   transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gray-400);
+  background: #9ca3af; /* gray-400 equivalent */
 }
 
 /* Focus styles */
 *:focus-visible {
-  outline: 2px solid var(--primary-500);
+  outline: 2px solid #3b82f6; /* blue-500 equivalent */
   outline-offset: 2px;
 }
 
 /* Selection styles */
 ::selection {
-  background-color: var(--primary-100);
-  color: var(--primary-900);
+  background-color: #dbeafe; /* blue-100 equivalent */
+  color: #1e3a8a; /* blue-900 equivalent */
+}
+
+/* Ensure text is selectable by default */
+* {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Allow text selection on input elements */
+input,
+textarea,
+select {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }

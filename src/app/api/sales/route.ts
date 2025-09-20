@@ -15,7 +15,26 @@ export async function POST(request: NextRequest) {
     } = body;
     const paymentMethod = payment?.method || "cash";
 
+    // Validate payment method
+    if (!["cash", "debit"].includes(paymentMethod)) {
+      console.log("Sales API - Invalid payment method:", paymentMethod);
+      console.log("Sales API - Payment method type:", typeof paymentMethod);
+      console.log("Sales API - Payment method length:", paymentMethod?.length);
+      console.log(
+        "Sales API - Payment method char codes:",
+        paymentMethod?.split("").map((c) => c.charCodeAt(0))
+      );
+      return NextResponse.json(
+        {
+          error: `Invalid payment method: ${paymentMethod}. Must be 'cash' or 'debit'`,
+        },
+        { status: 400 }
+      );
+    }
+
     console.log("Sales API - Request body:", body);
+    console.log("Sales API - Payment method:", paymentMethod);
+    console.log("Sales API - Payment object:", payment);
 
     // Get current user
     const {
@@ -40,22 +59,30 @@ export async function POST(request: NextRequest) {
     console.log("Sales API - User profile error:", userProfileError);
 
     // Create sale transaction
+    const saleData = {
+      id_member: memberId || null,
+      total_item: cart.reduce(
+        (sum: number, item: any) => sum + (item.quantity || 1),
+        0
+      ),
+      total_harga: total + discount, // Original total before discount
+      diskon: discount,
+      discount_type: discountType,
+      bayar: payment.amount,
+      diterima: payment.received,
+      payment_method: paymentMethod,
+      id_user: user.id,
+    };
+
+    console.log("Sales API - Sale data being inserted:", saleData);
+    console.log(
+      "Sales API - Payment method in sale data:",
+      saleData.payment_method
+    );
+
     const { data: sale, error: saleError } = await supabase
       .from("penjualan")
-      .insert({
-        id_member: memberId || null,
-        total_item: cart.reduce(
-          (sum: number, item: any) => sum + item.jumlah,
-          0
-        ),
-        total_harga: total,
-        diskon: discount,
-        discount_type: discountType,
-        bayar: payment.amount,
-        diterima: payment.received,
-        payment_method: paymentMethod,
-        id_user: user.id,
-      })
+      .insert(saleData)
       .select()
       .single();
 
@@ -67,13 +94,23 @@ export async function POST(request: NextRequest) {
     console.log("Sales API - Sale created:", sale);
 
     // Create sale details
-    const saleDetails = cart.map((item: any) => ({
-      id_penjualan: sale.id_penjualan,
-      id_kategori: item.id_kategori,
-      harga_jual: item.harga_jual,
-      jumlah: item.jumlah,
-      subtotal: item.subtotal,
-    }));
+    const saleDetails = cart.map((item: any) => {
+      // Calculate discounted price
+      const discountedPrice =
+        item.discountType === "percentage"
+          ? item.harga_jual - (item.harga_jual * item.discount) / 100
+          : item.harga_jual - item.discount;
+
+      return {
+        id_penjualan: sale.id_penjualan,
+        id_kategori: item.id_kategori,
+        harga_jual: item.harga_jual,
+        jumlah: item.quantity || 1, // Use quantity field, fallback to 1
+        subtotal: Math.round(discountedPrice * (item.quantity || 1)), // Calculate subtotal with quantity
+        diskon: item.discount,
+        discount_type: item.discountType,
+      };
+    });
 
     const { error: detailsError } = await supabase
       .from("penjualan_detail")
@@ -100,7 +137,7 @@ export async function POST(request: NextRequest) {
         "decrease_category_stock",
         {
           category_id: item.id_kategori,
-          quantity: item.jumlah,
+          quantity: item.quantity || 1, // Use quantity field, fallback to 1
         }
       );
 
@@ -137,6 +174,8 @@ export async function GET(request: NextRequest) {
           id_kategori,
           jumlah,
           subtotal,
+          diskon,
+          discount_type,
           kategori:kategori(nama_kategori)
         )
       `,

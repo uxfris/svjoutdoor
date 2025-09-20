@@ -22,6 +22,8 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
         id_kategori,
         jumlah,
         subtotal,
+        diskon,
+        discount_type,
         kategori:kategori(nama_kategori, harga_jual)
       )
     `
@@ -89,7 +91,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                 Subtotal
               </label>
               <p className="text-lg font-semibold text-gray-900">
-                Rp {(sale.total_harga + sale.diskon).toLocaleString()}
+                Rp {sale.total_harga.toLocaleString()}
               </p>
             </div>
             {sale.diskon > 0 && (
@@ -99,13 +101,11 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                 </label>
                 <p className="text-lg font-semibold text-red-600">
                   -Rp {sale.diskon.toLocaleString()}
-                  <span className="text-sm text-gray-500 ml-1">
-                    (
-                    {sale.discount_type === "percentage"
-                      ? `${sale.diskon}%`
-                      : "Fixed amount"}
-                    )
-                  </span>
+                  {sale.discount_type === "percentage" && (
+                    <span className="text-sm text-gray-500 ml-1">
+                      ({sale.diskon}%)
+                    </span>
+                  )}
                 </p>
               </div>
             )}
@@ -150,6 +150,9 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                     Price
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Discount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Quantity
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -165,6 +168,20 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       Rp {item.kategori?.harga_jual.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {item.diskon > 0 ? (
+                        <div className="text-red-600">
+                          - Rp {item.diskon.toLocaleString()}
+                          {item.discount_type === "percentage" && (
+                            <span className="text-xs text-gray-500 ml-1">
+                              ({item.diskon}%)
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">No discount</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {item.jumlah}

@@ -10,8 +10,6 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useLoading } from "@/components/layout/LoadingContext";
 import GlobalLoading from "@/components/layout/GlobalLoading";
-import { useDashboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import KeyboardShortcutsModal from "@/components/ui/KeyboardShortcutsModal";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -25,9 +23,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const supabase = createClient();
   const { endNavigation } = useLoading();
-
-  // Enable keyboard shortcuts
-  useDashboardShortcuts();
 
   // Memoize the auth check to prevent unnecessary re-runs
   const checkAuth = useCallback(async () => {
@@ -103,7 +98,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[var(--framer-color-bg)] relative">
           <div className="min-h-full">{children}</div>
           <GlobalLoading />
-          <KeyboardShortcutsModal />
         </main>
       </div>
     </div>

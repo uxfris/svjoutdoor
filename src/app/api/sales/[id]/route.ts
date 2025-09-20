@@ -84,6 +84,8 @@ export async function GET(
         harga_jual: item.harga_jual,
         jumlah: item.jumlah,
         subtotal: item.subtotal,
+        diskon: item.diskon || 0,
+        discount_type: item.discount_type || "amount",
       })) || [];
 
     const responseData = {

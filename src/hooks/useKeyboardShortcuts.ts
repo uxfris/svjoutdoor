@@ -33,6 +33,12 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
         return;
       }
 
+      // Don't interfere with critical standard browser shortcuts
+      const criticalShortcuts = ["c", "v", "x", "z", "y", "a"];
+      if (isCtrl && criticalShortcuts.includes(pressedKey)) {
+        return; // Let browser handle critical shortcuts (copy, paste, cut, undo, redo, select all)
+      }
+
       for (const shortcut of shortcuts) {
         const matchesKey = shortcut.key.toLowerCase() === pressedKey;
         const matchesCtrl = (shortcut.ctrlKey ?? false) === isCtrl;
@@ -95,12 +101,6 @@ export const useDashboardShortcuts = () => {
       ctrlKey: true,
       action: () => router.push("/users"),
       description: "Go to Users",
-    },
-    {
-      key: "c",
-      ctrlKey: true,
-      action: () => router.push("/categories"),
-      description: "Go to Categories",
     },
     {
       key: "?",

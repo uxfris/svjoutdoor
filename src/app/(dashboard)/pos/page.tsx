@@ -26,6 +26,7 @@ interface CartItem {
   harga_jual: number;
   discount: number;
   discountType: "percentage" | "amount";
+  quantity: number; // Quantity of this item (currently always 1, but added for future enhancements)
 }
 
 export default function POSPage() {
@@ -89,6 +90,7 @@ export default function POSPage() {
       harga_jual: category.harga_jual,
       discount: 0,
       discountType: "percentage",
+      quantity: 1, // Each cart item represents one unit
     };
 
     setCart([...cart, newItem]);
@@ -161,19 +163,44 @@ export default function POSPage() {
   };
 
   const getSubtotal = () => {
-    return cart.reduce((sum, item) => sum + getItemDiscountedPrice(item), 0);
+    return cart.reduce((sum, item) => sum + item.harga_jual, 0);
+  };
+
+  const getTotalDiscount = () => {
+    return cart.reduce((sum, item) => {
+      const originalPrice = item.harga_jual;
+      const discountedPrice = getItemDiscountedPrice(item);
+      return sum + (originalPrice - discountedPrice);
+    }, 0);
   };
 
   const getTotal = () => {
-    return getSubtotal();
+    return getSubtotal() - getTotalDiscount();
   };
 
   const getChange = () => {
     return paymentReceived - getTotal();
   };
 
+  // Helper functions for number formatting
+  const formatNumber = (value: number | string): string => {
+    if (!value || value === 0) return "";
+    const num = typeof value === "string" ? parseFloat(value) : value;
+    return num.toLocaleString();
+  };
+
+  const parseFormattedNumber = (value: string): number => {
+    return parseFloat(value.replace(/,/g, "")) || 0;
+  };
+
   const processSale = async () => {
     if (cart.length === 0) return;
+
+    // Validate payment method
+    if (!["cash", "debit"].includes(paymentMethod)) {
+      setError("Invalid payment method selected");
+      return;
+    }
 
     // Validation for debit payments
     if (paymentMethod === "debit" && paymentReceived < getTotal()) {
@@ -192,21 +219,35 @@ export default function POSPage() {
 
     try {
       const total = getTotal();
+      const totalDiscount = getTotalDiscount();
+      const paymentData = {
+        cart,
+        memberId: selectedMember,
+        total: getTotal(),
+        discount: totalDiscount,
+        discountType: "amount", // We're sending the actual discount amount, not percentage
+        payment: {
+          amount: getTotal(),
+          received: paymentReceived || getTotal(),
+          method: paymentMethod,
+        },
+      };
+
+      console.log("POS - Sending payment data:", paymentData);
+      console.log("POS - Payment method:", paymentMethod);
+      console.log("POS - Payment method type:", typeof paymentMethod);
+      console.log("POS - Payment method length:", paymentMethod?.length);
+      console.log(
+        "POS - Payment method char codes:",
+        paymentMethod?.split("").map((c) => c.charCodeAt(0))
+      );
+
       const response = await fetch("/api/sales", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          cart,
-          memberId: selectedMember,
-          total: getTotal(),
-          payment: {
-            amount: getTotal(),
-            received: paymentReceived || getTotal(),
-            method: paymentMethod,
-          },
-        }),
+        body: JSON.stringify(paymentData),
       });
 
       if (!response.ok) {
@@ -495,6 +536,16 @@ export default function POSPage() {
                                 Rp {item.harga_jual.toLocaleString()}
                               </div>
                             )}
+                            {item.discount > 0 && (
+                              <div className="text-xs text-red-600 font-medium">
+                                - Rp{" "}
+                                {(
+                                  item.harga_jual - getItemDiscountedPrice(item)
+                                ).toLocaleString()}
+                                {item.discountType === "percentage" &&
+                                  ` (${item.discount}%)`}
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -513,13 +564,12 @@ export default function POSPage() {
                                   </span>
                                 </div>
                                 <input
-                                  type="number"
-                                  min="0"
-                                  step="100"
-                                  value={item.harga_jual || ""}
+                                  type="text"
+                                  value={formatNumber(item.harga_jual)}
                                   onChange={(e) => {
-                                    const newPrice =
-                                      Number(e.target.value) || 0;
+                                    const newPrice = parseFormattedNumber(
+                                      e.target.value
+                                    );
                                     updatePrice(item.id, newPrice);
                                   }}
                                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -576,20 +626,21 @@ export default function POSPage() {
                                     </span>
                                   </div>
                                   <input
-                                    type="number"
-                                    min="0"
-                                    max={
+                                    type="text"
+                                    value={
                                       item.discountType === "percentage"
-                                        ? "100"
-                                        : undefined
+                                        ? item.discount || ""
+                                        : formatNumber(item.discount)
                                     }
-                                    value={item.discount || ""}
-                                    onChange={(e) =>
-                                      updateDiscount(
-                                        item.id,
-                                        Number(e.target.value) || 0
-                                      )
-                                    }
+                                    onChange={(e) => {
+                                      const value =
+                                        item.discountType === "percentage"
+                                          ? Number(e.target.value) || 0
+                                          : parseFormattedNumber(
+                                              e.target.value
+                                            );
+                                      updateDiscount(item.id, value);
+                                    }}
                                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     placeholder="0"
                                   />
@@ -658,6 +709,17 @@ export default function POSPage() {
                       Rp {getSubtotal().toLocaleString()}
                     </span>
                   </div>
+
+                  {getTotalDiscount() > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">
+                        Discount:
+                      </span>
+                      <span className="text-sm font-semibold text-red-600">
+                        - Rp {getTotalDiscount().toLocaleString()}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Total */}
                   <div className="border-t pt-3">
@@ -802,12 +864,10 @@ export default function POSPage() {
                         <span className="text-gray-500 text-sm">Rp</span>
                       </div>
                       <input
-                        type="number"
-                        min="0"
-                        step="100"
-                        value={paymentReceived || ""}
+                        type="text"
+                        value={formatNumber(paymentReceived)}
                         onChange={(e) => {
-                          const value = Number(e.target.value) || 0;
+                          const value = parseFormattedNumber(e.target.value);
                           setPaymentReceived(value);
                         }}
                         className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -872,7 +932,6 @@ export default function POSPage() {
                     </svg>
                     Payment Summary
                   </h3>
-
                   <div className="bg-white rounded-lg p-4 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-600">
@@ -933,9 +992,7 @@ export default function POSPage() {
                       </div>
                     )}
                   </div>
-
-                  {/* Debit Status Alert */}
-                  {paymentMethod === "debit" && (
+                  {/* {paymentMethod === "debit" && (
                     <div
                       className={`rounded-lg p-4 border ${
                         paymentReceived >= getTotal() && paymentReceived > 0
@@ -1001,7 +1058,7 @@ export default function POSPage() {
                         </div>
                       </div>
                     </div>
-                  )}
+                  )} */}
                 </div>
               )}
 

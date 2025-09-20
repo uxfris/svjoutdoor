@@ -13,7 +13,7 @@ interface KeyboardShortcut {
 
 const shortcuts: KeyboardShortcut[] = [
   { key: "H", ctrlKey: true, description: "Go to Dashboard" },
-  { key: "C", ctrlKey: true, description: "Go to Categories" },
+  { key: "P", ctrlKey: true, description: "Go to Categories" },
   { key: "S", ctrlKey: true, description: "Go to Sales" },
   { key: "N", ctrlKey: true, description: "New Sale (POS)" },
   { key: "M", ctrlKey: true, description: "Go to Members" },

@@ -23,6 +23,8 @@ export interface PrintReceiptData {
     harga_jual: number;
     jumlah: number;
     subtotal: number;
+    diskon: number;
+    discount_type: "percentage" | "amount";
   }>;
   setting: {
     nama_perusahaan: string;
@@ -115,12 +117,33 @@ export class PrintService {
     doc.line(20, yPosition, 190, yPosition);
     yPosition += 5;
 
-    data.items.forEach((item) => {
+    data.items.forEach((item, index) => {
+      doc.setFont("helvetica", "bold");
       doc.text(item.nama_kategori, 20, yPosition);
+      doc.setFont("helvetica", "normal");
       doc.text(item.jumlah.toString(), 120, yPosition);
       doc.text(`Rp ${item.harga_jual.toLocaleString()}`, 140, yPosition);
       doc.text(`Rp ${item.subtotal.toLocaleString()}`, 170, yPosition);
-      yPosition += 5;
+      yPosition += 4;
+
+      // Show discount if applicable
+      if (item.diskon > 0) {
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(220, 38, 38); // Red color
+        doc.setFontSize(8);
+        doc.text(
+          `Discount: -Rp ${item.diskon.toLocaleString()}${
+            item.discount_type === "percentage" ? ` (${item.diskon}%)` : ""
+          }`,
+          20,
+          yPosition
+        );
+        doc.setTextColor(0, 0, 0); // Reset to black
+        doc.setFontSize(9);
+        yPosition += 4;
+      }
+
+      yPosition += 2; // Slightly more spacing between items
     });
 
     yPosition += 5;
@@ -133,19 +156,20 @@ export class PrintService {
     doc.text(`Rp ${data.total_harga.toLocaleString()}`, 170, yPosition);
     yPosition += 5;
 
-    const discountAmount =
-      data.discount_type === "percentage"
-        ? (data.total_harga * data.diskon) / 100
-        : data.diskon;
+    const discountAmount = data.diskon;
 
     doc.text(
       `Discount: ${
-        data.discount_type === "percentage" ? `${data.diskon}%` : "Fixed"
+        data.diskon > 0
+          ? data.discount_type === "percentage"
+            ? `${data.diskon}%`
+            : "Fixed"
+          : "None"
       }`,
       20,
       yPosition
     );
-    doc.text(`Rp ${discountAmount.toLocaleString()}`, 170, yPosition);
+    doc.text(`- Rp ${discountAmount.toLocaleString()}`, 170, yPosition);
     yPosition += 5;
 
     doc.text(`Amount to Pay:`, 20, yPosition);
@@ -256,15 +280,43 @@ export class PrintService {
         <table width="100%" style="border-collapse: collapse;">
           ${data.items
             .map(
-              (item) => `
+              (item, index) => `
             <tr>
-              <td colspan="3">${item.nama_produk}</td>
+              <td colspan="3" style="font-weight: bold; padding: 2px 0;">${
+                item.nama_kategori
+              }</td>
             </tr>
             <tr>
-              <td>${item.jumlah} x ${formatCurrency(item.harga_jual)}</td>
+              <td style="padding: 1px 0;">${item.jumlah} x ${formatCurrency(
+                item.harga_jual
+              )}</td>
               <td></td>
-              <td class="right">${formatCurrency(item.subtotal)}</td>
+              <td class="right" style="padding: 1px 0;">${formatCurrency(
+                item.subtotal
+              )}</td>
             </tr>
+            ${
+              item.diskon > 0
+                ? `
+            <tr>
+              <td style="padding: 1px 0; font-size: 10px; color: #dc2626;">
+                Discount: -${formatCurrency(item.diskon)}${
+                    item.discount_type === "percentage"
+                      ? ` (${item.diskon}%)`
+                      : ""
+                  }
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
+            `
+                : ""
+            }
+            ${
+              index < data.items.length - 1
+                ? '<tr><td colspan="3" style="height: 3px;"></td></tr>'
+                : ""
+            }
           `
             )
             .join("")}
@@ -284,9 +336,11 @@ export class PrintService {
           <tr>
             <td>Diskon:</td>
             <td class="right">${
-              data.discount_type === "percentage"
-                ? `${data.diskon}%`
-                : `Rp ${data.diskon.toLocaleString()}`
+              data.diskon > 0
+                ? data.discount_type === "percentage"
+                  ? `- Rp ${data.diskon.toLocaleString()} (${data.diskon}%)`
+                  : `- Rp ${data.diskon.toLocaleString()}`
+                : "Rp 0"
             }</td>
           </tr>
           <tr>
