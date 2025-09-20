@@ -3,11 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const saleId = parseInt(params.id);
+    const resolvedParams = await params;
+    const saleId = parseInt(resolvedParams.id);
 
     if (isNaN(saleId)) {
       return NextResponse.json({ error: "Invalid sale ID" }, { status: 400 });

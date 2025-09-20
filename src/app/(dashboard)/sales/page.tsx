@@ -10,6 +10,7 @@ interface Sale {
   total_item: number;
   total_harga: number;
   payment_method: string;
+  id_user: string;
   created_at: string;
   member?: { nama: string };
   users?: { name: string; level: number };

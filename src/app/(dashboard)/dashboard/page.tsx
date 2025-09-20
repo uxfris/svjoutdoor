@@ -163,39 +163,64 @@ export default function DashboardPage() {
   );
 
   const { fetchData: fetchRecentSales } = useDataCache(
-    "recent-sales",
+    `recent-sales-${user?.id || "no-user"}-${isAdmin}`,
     async () => {
-      const supabase = createClient();
+      try {
+        // Wait for user to be available
+        if (!user) {
+          console.log("No user available for recent sales fetch");
+          return [];
+        }
 
-      // For cashiers, only show their own sales
-      // For admins, show all sales
-      const query = supabase
-        .from("penjualan")
-        .select(
+        console.log(
+          "Fetching recent sales for user:",
+          user.id,
+          "isAdmin:",
+          isAdmin
+        );
+
+        // Use the exact same approach as Sales page
+        const supabase = createClient();
+
+        // For cashiers, only show their own sales
+        // For admins, show all sales
+        const query = supabase
+          .from("penjualan")
+          .select(
+            `
+            id_penjualan,
+            total_item,
+            total_harga,
+            created_at,
+            id_user,
+            users:users!id_user(name, level)
           `
-          id_penjualan,
-          total_item,
-          total_harga,
-          created_at,
-          id_user
-        `
-        )
-        .order("created_at", { ascending: false })
-        .limit(20);
+          )
+          .order("created_at", { ascending: false })
+          .limit(20);
 
-      // Apply user filter for cashiers
-      if (!isAdmin && user) {
-        query.eq("id_user", user.id);
-      }
+        // Apply user filter for cashiers
+        if (!isAdmin) {
+          query.eq("id_user", user.id);
+        }
 
-      const { data: recentSalesData, error } = await query;
+        const { data: recentSalesData, error } = await query;
 
-      if (error) {
-        console.error("Error fetching recent sales:", error);
+        if (error) {
+          console.error("Error fetching recent sales:", error);
+          return [];
+        }
+
+        console.log(
+          "Recent sales data fetched:",
+          recentSalesData?.length || 0,
+          "sales"
+        );
+        return recentSalesData || [];
+      } catch (error) {
+        console.error("Exception in fetchRecentSales:", error);
         return [];
       }
-
-      return recentSalesData || [];
     },
     { ttl: 30 * 1000 } // 30 seconds cache
   );
@@ -408,6 +433,21 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, []);
 
+  // Refetch recent sales when user or admin status changes
+  useEffect(() => {
+    if (user && isAdmin !== null) {
+      console.log("User or admin status changed, refetching recent sales...");
+      fetchRecentSales().then((data) => {
+        if (data && data.length > 0) {
+          // Data already includes user information from the join
+          setRecentSales(data);
+        } else {
+          setRecentSales([]);
+        }
+      });
+    }
+  }, [user, isAdmin, fetchRecentSales]);
+
   // Refetch cashier stats when time filter changes
   useEffect(() => {
     if (isAdmin) {
@@ -424,60 +464,86 @@ export default function DashboardPage() {
 
   const fetchDashboardData = useCallback(async () => {
     try {
+      console.log("Starting dashboard data fetch...");
       const supabase = createClient();
 
       // Get current user
       const {
         data: { user: authUser },
+        error: authError,
       } = await supabase.auth.getUser();
 
-      if (!authUser) {
+      if (authError) {
+        console.error("Auth error:", authError);
         return;
       }
 
+      if (!authUser) {
+        console.log("No authenticated user found");
+        return;
+      }
+
+      console.log("User authenticated:", authUser.id);
       setUser(authUser);
 
       // Get user profile to check level
-      const { data: userProfile } = await supabase
+      const { data: userProfile, error: profileError } = await supabase
         .from("users")
         .select("level")
         .eq("id", authUser.id)
         .single();
 
+      if (profileError) {
+        console.error("Error fetching user profile:", profileError);
+      }
+
       const adminStatus = userProfile?.level === 1;
+      console.log("User admin status:", adminStatus);
       setIsAdmin(adminStatus);
 
+      // Wait a bit for state to update
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Fetch data using cache
-      const [statsData, recentSalesData, usersData, cashierStatsData] =
-        await Promise.all([
-          fetchDashboardStats(),
-          fetchRecentSales(),
-          supabase.from("users").select("id, name, level"),
-          fetchCashierStats(),
-        ]);
+      console.log("Fetching dashboard stats...");
+      const [statsData, usersData] = await Promise.all([
+        fetchDashboardStats(),
+        supabase.from("users").select("id, name, level"),
+      ]);
 
       setStats(statsData);
       setAllUsers(usersData.data || []);
-      console.log("Initial cashier stats data:", cashierStatsData);
-      setCashierStats(cashierStatsData);
 
-      // Map users to sales
-      if (recentSalesData) {
-        const salesWithUsers = recentSalesData.map((sale) => ({
-          ...sale,
-          users:
-            usersData.data?.find((user) => user.id === sale.id_user) || null,
-        }));
-        setRecentSales(salesWithUsers);
+      // Fetch recent sales after user and admin status are set
+      console.log("Fetching recent sales...");
+      const recentSalesData = await fetchRecentSales();
+      console.log("Recent sales fetched:", recentSalesData?.length || 0);
+
+      // Sales data already includes user information from the join
+      if (recentSalesData && recentSalesData.length > 0) {
+        console.log(
+          "Sales with users already included:",
+          recentSalesData.length
+        );
+        setRecentSales(recentSalesData);
       } else {
+        console.log("No recent sales data to display");
         setRecentSales([]);
+      }
+
+      // Fetch cashier stats for admin
+      if (adminStatus) {
+        console.log("Fetching cashier stats...");
+        const cashierStatsData = await fetchCashierStats();
+        console.log("Cashier stats data:", cashierStatsData);
+        setCashierStats(cashierStatsData);
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
-  }, [fetchDashboardStats, fetchRecentSales]);
+  }, [fetchDashboardStats, fetchRecentSales, fetchCashierStats]);
 
   const clearFilters = useCallback(() => {
     setSearchTerm("");

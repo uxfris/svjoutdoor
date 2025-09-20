@@ -292,11 +292,18 @@ export const RecentSalesTable = memo(function RecentSalesTable({
           <h3 className="text-lg font-medium text-[var(--framer-color-text)] mb-2">
             {recentSales.length === 0 ? "No recent sales" : "No sales found"}
           </h3>
-          <p className="text-[var(--framer-color-text-secondary)]">
+          <p className="text-[var(--framer-color-text-secondary)] mb-4">
             {recentSales.length === 0
               ? "Start making sales to see them here"
               : "Try adjusting your filters or search terms"}
           </p>
+          {/* Debug information */}
+          <div className="text-xs text-[var(--framer-color-text-tertiary)] bg-[var(--framer-color-surface)] p-3 rounded-lg max-w-md mx-auto">
+            <p>Debug Info:</p>
+            <p>Recent Sales: {recentSales.length}</p>
+            <p>Filtered Sales: {filteredSales?.length || 0}</p>
+            <p>All Users: {allUsers.length}</p>
+          </div>
         </div>
       )}
     </div>
