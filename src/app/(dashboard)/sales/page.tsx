@@ -22,7 +22,11 @@ export default function SalesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
+  const [cashierFilter, setCashierFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [allUsers, setAllUsers] = useState<
+    { id: string; name: string; level: number }[]
+  >([]);
 
   useEffect(() => {
     fetchSales();
@@ -30,114 +34,37 @@ export default function SalesPage() {
 
   useEffect(() => {
     filterSales();
-  }, [sales, searchTerm, paymentFilter, dateFilter]);
+  }, [sales, searchTerm, paymentFilter, dateFilter, cashierFilter]);
 
   const fetchSales = async () => {
     try {
       const supabase = createClient();
 
-      // First, let's check the current user
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      console.log("Current user:", user);
-      console.log("User error:", userError);
+      // Fetch sales and users in parallel
+      const [salesResult, usersResult] = await Promise.all([
+        supabase
+          .from("penjualan")
+          .select(
+            `
+            *,
+            member:member(nama),
+            users:users!id_user(name, level)
+          `
+          )
+          .order("created_at", { ascending: false }),
+        supabase.from("users").select("id, name, level"),
+      ]);
 
-      // Check user profile and level
-      if (user) {
-        const { data: userProfile, error: profileError } = await supabase
-          .from("users")
-          .select("name, level")
-          .eq("id", user.id)
-          .single();
-        console.log("User profile:", userProfile);
-        console.log("Profile error:", profileError);
+      if (salesResult.error) {
+        console.error("Error fetching sales:", salesResult.error);
+      } else {
+        setSales(salesResult.data || []);
       }
 
-      // First, let's check raw sales data without joins
-      const { data: rawSales, error: rawError } = await supabase
-        .from("penjualan")
-        .select("id_penjualan, id_user, created_at")
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      console.log("Raw sales data (first 5):", rawSales);
-      console.log("Raw sales error:", rawError);
-
-      const { data, error } = await supabase
-        .from("penjualan")
-        .select(
-          `
-          *,
-          member:member(nama),
-          users:users!id_user(name, level)
-        `
-        )
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching sales:", error);
+      if (usersResult.error) {
+        console.error("Error fetching users:", usersResult.error);
       } else {
-        console.log("Fetched sales data:", data);
-        console.log("Sample sale with user data:", data?.[0]);
-
-        // If we have sales but no user data, let's try to fetch user data separately
-        if (data && data.length > 0 && !data[0].users) {
-          console.log("No user data in join, trying to fetch separately...");
-          const userIds = [
-            ...new Set(data.map((sale) => sale.id_user).filter(Boolean)),
-          ];
-          console.log("User IDs found in sales:", userIds);
-
-          if (userIds.length > 0) {
-            const { data: users, error: usersError } = await supabase
-              .from("users")
-              .select("id, name, level")
-              .in("id", userIds);
-
-            console.log("Fetched users separately:", users);
-            console.log("Users error:", usersError);
-
-            // Let's also check what users actually exist in the database
-            // First try with RLS, then try with service role if needed
-            const { data: allUsers, error: allUsersError } = await supabase
-              .from("users")
-              .select("id, name, level")
-              .limit(10);
-
-            console.log("All users in database (with RLS):", allUsers);
-            console.log("All users error:", allUsersError);
-
-            // If RLS is blocking us, let's try to get the specific user we need
-            if (allUsersError || !allUsers || allUsers.length === 0) {
-              console.log(
-                "RLS might be blocking user access, trying individual queries..."
-              );
-              for (const userId of userIds) {
-                const { data: singleUser, error: singleUserError } =
-                  await supabase
-                    .from("users")
-                    .select("id, name, level")
-                    .eq("id", userId)
-                    .single();
-                console.log(`User ${userId}:`, singleUser, singleUserError);
-              }
-            }
-
-            // Map users back to sales
-            const salesWithUsers = data.map((sale) => ({
-              ...sale,
-              users: users?.find((user) => user.id === sale.id_user) || null,
-            }));
-
-            setSales(salesWithUsers);
-          } else {
-            setSales(data);
-          }
-        } else {
-          setSales(data || []);
-        }
+        setAllUsers(usersResult.data || []);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -168,6 +95,11 @@ export default function SalesPage() {
       filtered = filtered.filter(
         (sale) => sale.payment_method === paymentFilter
       );
+    }
+
+    // Cashier filter
+    if (cashierFilter !== "all") {
+      filtered = filtered.filter((sale) => sale.id_user === cashierFilter);
     }
 
     // Date filter
@@ -313,7 +245,7 @@ export default function SalesPage() {
           {/* Filter Options */}
           {showFilters && (
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Payment Method Filter */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -327,6 +259,25 @@ export default function SalesPage() {
                     <option value="all">All Payment Methods</option>
                     <option value="cash">Cash</option>
                     <option value="transfer">Transfer</option>
+                  </select>
+                </div>
+
+                {/* Cashier Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cashier
+                  </label>
+                  <select
+                    value={cashierFilter}
+                    onChange={(e) => setCashierFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent"
+                  >
+                    <option value="all">All Cashiers</option>
+                    {allUsers.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

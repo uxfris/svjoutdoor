@@ -70,12 +70,22 @@ export default function DashboardPage() {
     myTotalSales: 0,
   });
 
+  // Cashier performance stats for admin
+  const [cashierStats, setCashierStats] = useState<{
+    [cashierId: string]: {
+      name: string;
+      totalSales: number;
+      totalRevenue: number;
+    };
+  }>({});
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [cashierFilter, setCashierFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [amountFilter, setAmountFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [cashierTimeFilter, setCashierTimeFilter] = useState("today");
 
   // Drawer states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -178,10 +188,152 @@ export default function DashboardPage() {
         query.eq("id_user", user.id);
       }
 
-      const { data: recentSalesData } = await query;
+      const { data: recentSalesData, error } = await query;
+
+      if (error) {
+        console.error("Error fetching recent sales:", error);
+        return [];
+      }
+
       return recentSalesData || [];
     },
     { ttl: 30 * 1000 } // 30 seconds cache
+  );
+
+  const { fetchData: fetchCashierStats } = useDataCache(
+    `cashier-stats-${cashierTimeFilter}`,
+    async () => {
+      const supabase = createClient();
+
+      if (!isAdmin) {
+        console.log("Not admin, returning empty cashier stats");
+        return {};
+      }
+
+      console.log("Fetching cashier stats for filter:", cashierTimeFilter);
+
+      // Calculate date range based on filter
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      let startDate: Date;
+      let endDate: Date;
+
+      switch (cashierTimeFilter) {
+        case "today":
+          startDate = new Date(today);
+          endDate = new Date(today);
+          endDate.setDate(endDate.getDate() + 1);
+          break;
+        case "yesterday":
+          startDate = new Date(today);
+          startDate.setDate(startDate.getDate() - 1);
+          endDate = new Date(today);
+          break;
+        case "week":
+          startDate = new Date(today);
+          startDate.setDate(startDate.getDate() - 7);
+          endDate = new Date(today);
+          endDate.setDate(endDate.getDate() + 1);
+          break;
+        case "month":
+          startDate = new Date(today);
+          startDate.setMonth(startDate.getMonth() - 1);
+          endDate = new Date(today);
+          endDate.setDate(endDate.getDate() + 1);
+          break;
+        default:
+          startDate = new Date(0); // All time
+          endDate = new Date();
+      }
+
+      console.log(
+        "Date range:",
+        startDate.toISOString(),
+        "to",
+        endDate.toISOString()
+      );
+
+      // Get all sales in the date range
+      let query = supabase
+        .from("penjualan")
+        .select("id_user, total_harga, created_at");
+
+      // Only apply date filters if not "all time"
+      if (cashierTimeFilter !== "all") {
+        query = query
+          .gte("created_at", startDate.toISOString())
+          .lt("created_at", endDate.toISOString());
+      }
+
+      const { data: salesData, error: salesError } = await query;
+
+      if (salesError) {
+        console.error("Error fetching sales data:", salesError);
+        return {};
+      }
+
+      // Get all users
+      const { data: usersData, error: usersError } = await supabase
+        .from("users")
+        .select("id, name");
+
+      if (usersError) {
+        console.error("Error fetching users data:", usersError);
+        return {};
+      }
+
+      console.log("Sales data:", salesData);
+      console.log("Users data:", usersData);
+
+      // Debug: Let's also try to get all sales without date filter to see if there's any data
+      if (!salesData || salesData.length === 0) {
+        console.log(
+          "No sales found with date filter, trying to get all sales..."
+        );
+        const { data: allSalesData, error: allSalesError } = await supabase
+          .from("penjualan")
+          .select("id_user, total_harga, created_at")
+          .limit(10);
+
+        console.log("All sales data (first 10):", allSalesData);
+        console.log("All sales error:", allSalesError);
+      }
+
+      if (!salesData || !usersData) {
+        console.log("No sales or users data found");
+        return {};
+      }
+
+      // Calculate stats per cashier
+      const stats: {
+        [key: string]: {
+          name: string;
+          totalSales: number;
+          totalRevenue: number;
+        };
+      } = {};
+
+      usersData.forEach((user) => {
+        const userSales = salesData.filter((sale) => sale.id_user === user.id);
+        stats[user.id] = {
+          name: user.name,
+          totalSales: userSales.length,
+          totalRevenue: userSales.reduce(
+            (sum, sale) => sum + sale.total_harga,
+            0
+          ),
+        };
+        console.log(
+          `Cashier ${user.name}: ${userSales.length} sales, Rp ${userSales
+            .reduce((sum, sale) => sum + sale.total_harga, 0)
+            .toLocaleString()}`
+        );
+      });
+
+      console.log("Final cashier stats:", stats);
+      return stats;
+    },
+    { ttl: 2 * 60 * 1000 } // 2 minutes cache
   );
 
   // Memoized filtered sales computation
@@ -256,6 +408,20 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, []);
 
+  // Refetch cashier stats when time filter changes
+  useEffect(() => {
+    if (isAdmin) {
+      console.log(
+        "Refetching cashier stats due to filter change:",
+        cashierTimeFilter
+      );
+      fetchCashierStats().then((data) => {
+        console.log("Received cashier stats data:", data);
+        setCashierStats(data);
+      });
+    }
+  }, [cashierTimeFilter, isAdmin, fetchCashierStats]);
+
   const fetchDashboardData = useCallback(async () => {
     try {
       const supabase = createClient();
@@ -282,14 +448,18 @@ export default function DashboardPage() {
       setIsAdmin(adminStatus);
 
       // Fetch data using cache
-      const [statsData, recentSalesData, usersData] = await Promise.all([
-        fetchDashboardStats(),
-        fetchRecentSales(),
-        supabase.from("users").select("id, name, level"),
-      ]);
+      const [statsData, recentSalesData, usersData, cashierStatsData] =
+        await Promise.all([
+          fetchDashboardStats(),
+          fetchRecentSales(),
+          supabase.from("users").select("id, name, level"),
+          fetchCashierStats(),
+        ]);
 
       setStats(statsData);
       setAllUsers(usersData.data || []);
+      console.log("Initial cashier stats data:", cashierStatsData);
+      setCashierStats(cashierStatsData);
 
       // Map users to sales
       if (recentSalesData) {
@@ -299,6 +469,8 @@ export default function DashboardPage() {
             usersData.data?.find((user) => user.id === sale.id_user) || null,
         }));
         setRecentSales(salesWithUsers);
+      } else {
+        setRecentSales([]);
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -420,7 +592,7 @@ export default function DashboardPage() {
 
   const statsArray = useMemo(() => {
     if (isAdmin) {
-      // Admin dashboard - business overview
+      // Admin dashboard - business overview (hiding member card)
       return [
         {
           name: "Total Products",
@@ -433,12 +605,6 @@ export default function DashboardPage() {
           value: stats.totalSales,
           icon: CurrencyDollarIcon,
           color: "bg-[var(--framer-color-success)]",
-        },
-        {
-          name: "Total Members",
-          value: stats.totalMembers,
-          icon: UserGroupIcon,
-          color: "bg-[var(--framer-color-tint)]",
         },
       ];
     } else {
@@ -499,7 +665,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2">
         {statsArray.map((stat) => (
           <StatsCard
             key={stat.name}
@@ -510,6 +676,105 @@ export default function DashboardPage() {
           />
         ))}
       </div>
+
+      {/* Cashier Performance Section - Only for Admin */}
+      {isAdmin && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                Cashier Performance
+              </h2>
+              <p className="text-slate-600">
+                Sales and revenue performance by cashier
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <select
+                  value={cashierTimeFilter}
+                  onChange={(e) => setCashierTimeFilter(e.target.value)}
+                  className="appearance-none bg-white px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors cursor-pointer min-w-[140px]"
+                >
+                  <option value="today">Today</option>
+                  <option value="yesterday">Yesterday</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="all">All Time</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.entries(cashierStats).map(([cashierId, data]) => (
+              <div
+                key={cashierId}
+                className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-lg font-bold text-blue-600">
+                        {data.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {data.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">Cashier</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Total Sales</span>
+                    <span className="text-lg font-bold text-green-600">
+                      {data.totalSales}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Total Revenue</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      Rp {data.totalRevenue.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {Object.keys(cashierStats).length === 0 && (
+            <div className="text-center py-12 bg-gray-50 rounded-xl">
+              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserGroupIcon className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No cashier data available
+              </h3>
+              <p className="text-gray-600">
+                No sales data found for the selected time period
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Recent Sales */}
       <div className="mb-6">
