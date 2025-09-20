@@ -68,14 +68,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: salesError.message }, { status: 400 });
     }
 
-    console.log(
-      `Recent sales API: Found ${recentSalesData?.length || 0} sales for user ${
-        user.id
-      }, isAdmin: ${isAdmin}`
-    );
+    // Process data to convert user array to single object (same as Sales page)
+    const processedSales =
+      recentSalesData?.map((sale: any) => ({
+        ...sale,
+        users: sale.users?.[0] || null,
+      })) || [];
 
     return NextResponse.json({
-      data: recentSalesData || [],
+      data: processedSales,
       isAdmin,
       userId: user.id,
     });

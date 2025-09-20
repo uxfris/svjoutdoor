@@ -5,6 +5,7 @@ import { useDataCache } from "@/hooks/useDataCache";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
 import { LazyWrapper } from "@/components/ui/LazyWrapper";
+import { RecentSale } from "@/lib/database.types";
 import {
   CubeIcon,
   CurrencyDollarIcon,
@@ -21,15 +22,6 @@ const SaleDetailsDrawer = dynamic(
     })),
   { ssr: false }
 );
-
-interface RecentSale {
-  id_penjualan: number;
-  total_item: number;
-  total_harga: number;
-  created_at: string;
-  id_user: string;
-  users: { name: string; level: number }[];
-}
 
 interface SaleDetail {
   id_penjualan: number;
@@ -166,25 +158,14 @@ export default function DashboardPage() {
     `recent-sales-${user?.id || "no-user"}-${isAdmin}`,
     async () => {
       try {
-        // Wait for user to be available
         if (!user) {
-          console.log("No user available for recent sales fetch");
           return [];
         }
 
-        console.log(
-          "Fetching recent sales for user:",
-          user.id,
-          "isAdmin:",
-          isAdmin
-        );
-
-        // Use the exact same approach as Sales page
         const supabase = createClient();
 
-        // For cashiers, only show their own sales
-        // For admins, show all sales
-        const query = supabase
+        // Try a simpler approach first - get sales without join
+        let salesQuery = supabase
           .from("penjualan")
           .select(
             `
@@ -192,37 +173,55 @@ export default function DashboardPage() {
             total_item,
             total_harga,
             created_at,
-            id_user,
-            users:users!id_user(name, level)
+            id_user
           `
           )
           .order("created_at", { ascending: false })
           .limit(20);
 
-        // Apply user filter for cashiers
         if (!isAdmin) {
-          query.eq("id_user", user.id);
+          salesQuery = salesQuery.eq("id_user", user.id);
         }
 
-        const { data: recentSalesData, error } = await query;
+        const { data: recentSalesData, error: salesError } = await salesQuery;
 
-        if (error) {
-          console.error("Error fetching recent sales:", error);
+        if (salesError) {
+          console.error("Error fetching recent sales:", salesError);
           return [];
         }
 
-        console.log(
-          "Recent sales data fetched:",
-          recentSalesData?.length || 0,
-          "sales"
-        );
-        return recentSalesData || [];
+        // Get all users for manual join
+        const { data: allUsersData, error: allUsersError } = await supabase
+          .from("users")
+          .select("id, name, level");
+
+        if (allUsersError) {
+          console.error("Error fetching users:", allUsersError);
+        }
+
+        // Process data with manual user join
+        const processedSales =
+          recentSalesData?.map((sale: any) => {
+            // Find user data manually
+            const userData =
+              sale.id_user && allUsersData
+                ? allUsersData.find((user: any) => user.id === sale.id_user) ||
+                  null
+                : null;
+
+            return {
+              ...sale,
+              users: userData,
+            };
+          }) || [];
+
+        return processedSales;
       } catch (error) {
         console.error("Exception in fetchRecentSales:", error);
         return [];
       }
     },
-    { ttl: 30 * 1000 } // 30 seconds cache
+    { ttl: 30 * 1000 }
   );
 
   const { fetchData: fetchCashierStats } = useDataCache(
@@ -370,7 +369,7 @@ export default function DashboardPage() {
       filtered = filtered.filter(
         (sale) =>
           sale.id_penjualan.toString().includes(searchTerm) ||
-          (sale.users?.[0]?.name || "Unknown")
+          (sale.users?.name || "Unknown")
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
           sale.total_harga.toString().includes(searchTerm)
@@ -436,10 +435,8 @@ export default function DashboardPage() {
   // Refetch recent sales when user or admin status changes
   useEffect(() => {
     if (user && isAdmin !== null) {
-      console.log("User or admin status changed, refetching recent sales...");
       fetchRecentSales().then((data) => {
         if (data && data.length > 0) {
-          // Data already includes user information from the join
           setRecentSales(data);
         } else {
           setRecentSales([]);
@@ -451,12 +448,7 @@ export default function DashboardPage() {
   // Refetch cashier stats when time filter changes
   useEffect(() => {
     if (isAdmin) {
-      console.log(
-        "Refetching cashier stats due to filter change:",
-        cashierTimeFilter
-      );
       fetchCashierStats().then((data) => {
-        console.log("Received cashier stats data:", data);
         setCashierStats(data);
       });
     }
@@ -464,7 +456,6 @@ export default function DashboardPage() {
 
   const fetchDashboardData = useCallback(async () => {
     try {
-      console.log("Starting dashboard data fetch...");
       const supabase = createClient();
 
       // Get current user
@@ -479,11 +470,9 @@ export default function DashboardPage() {
       }
 
       if (!authUser) {
-        console.log("No authenticated user found");
         return;
       }
 
-      console.log("User authenticated:", authUser.id);
       setUser(authUser);
 
       // Get user profile to check level
@@ -498,14 +487,12 @@ export default function DashboardPage() {
       }
 
       const adminStatus = userProfile?.level === 1;
-      console.log("User admin status:", adminStatus);
       setIsAdmin(adminStatus);
 
       // Wait a bit for state to update
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Fetch data using cache
-      console.log("Fetching dashboard stats...");
       const [statsData, usersData] = await Promise.all([
         fetchDashboardStats(),
         supabase.from("users").select("id, name, level"),
@@ -515,27 +502,18 @@ export default function DashboardPage() {
       setAllUsers(usersData.data || []);
 
       // Fetch recent sales after user and admin status are set
-      console.log("Fetching recent sales...");
       const recentSalesData = await fetchRecentSales();
-      console.log("Recent sales fetched:", recentSalesData?.length || 0);
 
-      // Sales data already includes user information from the join
+      // Set recent sales data (already processed in fetchRecentSales)
       if (recentSalesData && recentSalesData.length > 0) {
-        console.log(
-          "Sales with users already included:",
-          recentSalesData.length
-        );
         setRecentSales(recentSalesData);
       } else {
-        console.log("No recent sales data to display");
         setRecentSales([]);
       }
 
       // Fetch cashier stats for admin
       if (adminStatus) {
-        console.log("Fetching cashier stats...");
         const cashierStatsData = await fetchCashierStats();
-        console.log("Cashier stats data:", cashierStatsData);
         setCashierStats(cashierStatsData);
       }
     } catch (error) {

@@ -7,15 +7,7 @@ import {
   XMarkIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
-
-interface RecentSale {
-  id_penjualan: number;
-  total_item: number;
-  total_harga: number;
-  created_at: string;
-  id_user: string;
-  users: { name: string; level: number }[];
-}
+import { RecentSale } from "@/lib/database.types";
 
 interface RecentSalesTableProps {
   recentSales: RecentSale[];
@@ -237,11 +229,11 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-[var(--framer-color-tint-disabled)] rounded-full flex items-center justify-center mr-3">
                       <span className="text-sm font-medium text-[var(--framer-color-tint)]">
-                        {sale.users?.[0]?.name?.charAt(0).toUpperCase() || "?"}
+                        {sale.users?.name?.charAt(0).toUpperCase() || "?"}
                       </span>
                     </div>
                     <span className="text-sm font-medium text-[var(--framer-color-text)]">
-                      {sale.users?.[0]?.name ||
+                      {sale.users?.name ||
                         (sale.id_user ? "User Not Found" : "No Cashier")}
                     </span>
                   </div>

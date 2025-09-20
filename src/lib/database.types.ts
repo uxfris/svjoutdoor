@@ -6,6 +6,16 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
+// Shared types for components
+export interface RecentSale {
+  id_penjualan: number;
+  total_item: number;
+  total_harga: number;
+  created_at: string;
+  id_user: string;
+  users?: { name: string; level: number } | null;
+}
+
 export interface Database {
   public: {
     Tables: {
