@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useDataCache } from "@/hooks/useDataCache";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
+import { SalesByCategory } from "@/components/dashboard/SalesByCategory";
 import { LazyWrapper } from "@/components/ui/LazyWrapper";
 import { RecentSale } from "@/lib/database.types";
 import {
@@ -80,6 +81,7 @@ export default function DashboardPage() {
   const [amountFilter, setAmountFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [cashierTimeFilter, setCashierTimeFilter] = useState("today");
+  const [categoryTimeFilter, setCategoryTimeFilter] = useState("today");
 
   // Drawer states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -796,6 +798,15 @@ export default function DashboardPage() {
           )}
         </div>
       )}
+
+      {/* Sales by Category */}
+      <div className="mb-8">
+        <SalesByCategory
+          timeFilter={categoryTimeFilter}
+          onTimeFilterChange={setCategoryTimeFilter}
+          isAdmin={isAdmin}
+        />
+      </div>
 
       {/* Recent Sales */}
       <div className="mb-6">
