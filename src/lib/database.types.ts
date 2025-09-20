@@ -160,6 +160,7 @@ export interface Database {
           diskon: number;
           bayar: number;
           diterima: number;
+          payment_method: "cash" | "transfer";
           id_user: string;
           created_at: string;
           updated_at: string;
@@ -172,6 +173,7 @@ export interface Database {
           diskon?: number;
           bayar?: number;
           diterima?: number;
+          payment_method?: "cash" | "transfer";
           id_user: string;
           created_at?: string;
           updated_at?: string;
@@ -184,6 +186,7 @@ export interface Database {
           diskon?: number;
           bayar?: number;
           diterima?: number;
+          payment_method?: "cash" | "transfer";
           id_user?: string;
           created_at?: string;
           updated_at?: string;

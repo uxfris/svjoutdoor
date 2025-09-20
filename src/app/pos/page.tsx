@@ -21,6 +21,9 @@ export default function POSPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [discount, setDiscount] = useState(0);
   const [paymentReceived, setPaymentReceived] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "transfer">(
+    "cash"
+  );
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
@@ -118,6 +121,18 @@ export default function POSPage() {
   const processSale = async () => {
     if (cart.length === 0) return;
 
+    // Validation for transfer payments
+    if (paymentMethod === "transfer" && paymentReceived < getTotal()) {
+      setError("Transfer amount must be at least equal to the total amount");
+      return;
+    }
+
+    // Validation for cash payments
+    if (paymentMethod === "cash" && paymentReceived < getTotal()) {
+      setError("Insufficient payment received");
+      return;
+    }
+
     setProcessing(true);
     setError("");
 
@@ -136,6 +151,7 @@ export default function POSPage() {
           payment: {
             amount: getTotal(),
             received: paymentReceived || getTotal(),
+            method: paymentMethod,
           },
         }),
       });
@@ -336,32 +352,230 @@ export default function POSPage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <label className="text-sm text-gray-600">Received:</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={paymentReceived}
-                      onChange={(e) =>
-                        setPaymentReceived(Number(e.target.value))
-                      }
-                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
-                      placeholder="0"
-                    />
+                  <div className="space-y-2">
+                    <label className="text-sm text-gray-600">
+                      Payment Method:
+                    </label>
+                    <div className="flex space-x-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="cash"
+                          checked={paymentMethod === "cash"}
+                          onChange={(e) =>
+                            setPaymentMethod(
+                              e.target.value as "cash" | "transfer"
+                            )
+                          }
+                          className="mr-2"
+                        />
+                        <span className="text-sm">Cash</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="transfer"
+                          checked={paymentMethod === "transfer"}
+                          onChange={(e) =>
+                            setPaymentMethod(
+                              e.target.value as "cash" | "transfer"
+                            )
+                          }
+                          className="mr-2"
+                        />
+                        <span className="text-sm">Transfer</span>
+                      </label>
+                    </div>
                   </div>
 
-                  {paymentReceived > 0 && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Change:</span>
-                      <span
-                        className={`text-sm font-semibold ${
-                          getChange() >= 0 ? "text-green-600" : "text-red-600"
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <label className="text-sm font-medium text-gray-700 min-w-[80px]">
+                          Received:
+                        </label>
+                        <div className="flex-1 relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-gray-500 text-sm">Rp</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={
+                              paymentReceived > 0
+                                ? paymentReceived.toLocaleString()
+                                : ""
+                            }
+                            onChange={(e) => {
+                              const value = e.target.value.replace(
+                                /[^\d]/g,
+                                ""
+                              );
+                              setPaymentReceived(Number(value));
+                            }}
+                            className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder={
+                              paymentMethod === "transfer"
+                                ? "Enter transfer amount"
+                                : "Enter amount received"
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* Quick action buttons */}
+                      <div className="flex space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => setPaymentReceived(getTotal())}
+                          className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                        >
+                          Exact Amount
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPaymentReceived(0)}
+                          className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                        >
+                          Clear
+                        </button>
+                        {paymentMethod === "cash" && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPaymentReceived(
+                                Math.ceil(getTotal() / 1000) * 1000
+                              )
+                            }
+                            className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                          >
+                            Round Up
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {paymentMethod === "transfer" && (
+                      <div
+                        className={`rounded-lg p-3 border ${
+                          paymentReceived >= getTotal() && paymentReceived > 0
+                            ? "bg-green-50 border-green-200"
+                            : "bg-blue-50 border-blue-200"
                         }`}
                       >
-                        Rp {getChange().toLocaleString()}
-                      </span>
-                    </div>
-                  )}
+                        <div className="flex items-center">
+                          <svg
+                            className={`w-5 h-5 mr-2 ${
+                              paymentReceived >= getTotal() &&
+                              paymentReceived > 0
+                                ? "text-green-600"
+                                : "text-blue-600"
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            {paymentReceived >= getTotal() &&
+                            paymentReceived > 0 ? (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            ) : (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            )}
+                          </svg>
+                          <span
+                            className={`text-sm font-medium ${
+                              paymentReceived >= getTotal() &&
+                              paymentReceived > 0
+                                ? "text-green-800"
+                                : "text-blue-800"
+                            }`}
+                          >
+                            {paymentReceived >= getTotal() &&
+                            paymentReceived > 0
+                              ? "Transfer Payment Ready"
+                              : "Transfer Payment"}
+                          </span>
+                        </div>
+                        <p
+                          className={`text-xs mt-1 ${
+                            paymentReceived >= getTotal() && paymentReceived > 0
+                              ? "text-green-600"
+                              : "text-blue-600"
+                          }`}
+                        >
+                          {paymentReceived >= getTotal() && paymentReceived > 0
+                            ? "Transfer amount is sufficient to complete the transaction"
+                            : "Enter the amount customer will transfer"}
+                        </p>
+                      </div>
+                    )}
+
+                    {paymentReceived > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">
+                            Amount to Pay:
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            Rp {getTotal().toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">
+                            Received:
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            Rp {paymentReceived.toLocaleString()}
+                          </span>
+                        </div>
+                        {paymentMethod === "cash" && (
+                          <div className="flex justify-between items-center border-t pt-2">
+                            <span className="text-sm font-semibold text-gray-700">
+                              Change:
+                            </span>
+                            <span
+                              className={`text-sm font-bold ${
+                                getChange() >= 0
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }`}
+                            >
+                              Rp {getChange().toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+                        {paymentMethod === "transfer" && (
+                          <div className="flex justify-between items-center border-t pt-2">
+                            <span className="text-sm font-semibold text-gray-700">
+                              Status:
+                            </span>
+                            <span
+                              className={`text-sm font-bold ${
+                                paymentReceived >= getTotal()
+                                  ? "text-green-600"
+                                  : "text-orange-600"
+                              }`}
+                            >
+                              {paymentReceived >= getTotal()
+                                ? "Complete"
+                                : "Pending"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 {error && (
                   <div className="mb-4 text-red-600 text-sm">{error}</div>

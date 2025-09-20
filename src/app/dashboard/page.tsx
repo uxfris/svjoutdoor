@@ -4,16 +4,28 @@ import { createClient } from "@/lib/supabase/server";
 export default async function DashboardPage() {
   const supabase = createClient();
 
+  // Get current user
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (!authUser) {
+    return <div>Please log in to view the dashboard.</div>;
+  }
+
+  // Get user profile to check level
+  const { data: userProfile } = await supabase
+    .from("users")
+    .select("level")
+    .eq("id", authUser.id)
+    .single();
+
+  const isAdmin = userProfile?.level === 1;
+
   // Get dashboard statistics
-  const [
-    { count: totalProducts },
-    { count: totalSales },
-    { count: totalMembers },
-    { data: recentSales },
-  ] = await Promise.all([
+  const queries = [
     supabase.from("produk").select("*", { count: "exact", head: true }),
     supabase.from("penjualan").select("*", { count: "exact", head: true }),
-    supabase.from("member").select("*", { count: "exact", head: true }),
     supabase
       .from("penjualan")
       .select(
@@ -30,7 +42,28 @@ export default async function DashboardPage() {
       )
       .order("created_at", { ascending: false })
       .limit(5),
-  ]);
+  ];
+
+  // Add members query only for administrators
+  if (isAdmin) {
+    queries.splice(
+      2,
+      0,
+      supabase.from("member").select("*", { count: "exact", head: true })
+    );
+  }
+
+  const results = await Promise.all(queries);
+
+  const [
+    { count: totalProducts },
+    { count: totalSales },
+    { data: recentSales },
+  ] = isAdmin
+    ? [results[0], results[1], results[3]]
+    : [results[0], results[1], results[2]];
+
+  const { count: totalMembers } = isAdmin ? results[2] : { count: 0 };
 
   const stats = [
     {
@@ -45,12 +78,17 @@ export default async function DashboardPage() {
       icon: "💰",
       color: "bg-green-500",
     },
-    {
-      name: "Total Members",
-      value: totalMembers || 0,
-      icon: "👥",
-      color: "bg-purple-500",
-    },
+    // Only show member card for administrators
+    ...(isAdmin
+      ? [
+          {
+            name: "Total Members",
+            value: totalMembers || 0,
+            icon: "👥",
+            color: "bg-purple-500",
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -64,7 +102,11 @@ export default async function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div
+          className={`grid grid-cols-1 gap-6 mb-8 ${
+            isAdmin ? "md:grid-cols-3" : "md:grid-cols-2"
+          }`}
+        >
           {stats.map((stat) => (
             <div
               key={stat.name}

@@ -6,6 +6,7 @@ export async function POST(request: NextRequest) {
     const supabase = createClient();
     const body = await request.json();
     const { cart, memberId, total, discount = 0, payment } = body;
+    const paymentMethod = payment?.method || "cash";
 
     console.log("Sales API - Request body:", body);
 
@@ -33,6 +34,7 @@ export async function POST(request: NextRequest) {
         diskon: discount,
         bayar: payment.amount,
         diterima: payment.received,
+        payment_method: paymentMethod,
         id_user: user.id,
       })
       .select()

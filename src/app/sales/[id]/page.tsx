@@ -94,6 +94,20 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                   Rp {sale.total_harga.toLocaleString()}
                 </p>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Payment Method
+                </label>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    sale.payment_method === "cash"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-blue-100 text-blue-800"
+                  }`}
+                >
+                  {sale.payment_method === "cash" ? "Cash" : "Transfer"}
+                </span>
+              </div>
             </div>
           </div>
 

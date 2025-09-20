@@ -18,6 +18,7 @@ interface SaleData {
   diskon: number;
   bayar: number;
   diterima: number;
+  payment_method: "cash" | "transfer";
   created_at: string;
   member?: {
     nama: string;
@@ -297,18 +298,60 @@ export default function TransactionCompletePage() {
                       <span>Rp {saleData.bayar.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Received:</span>
-                      <span className="font-medium">
-                        Rp {saleData.diterima.toLocaleString()}
+                      <span className="text-gray-600">Payment Method:</span>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          saleData.payment_method === "cash"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
+                        {saleData.payment_method === "cash"
+                          ? "Cash"
+                          : "Transfer"}
                       </span>
                     </div>
-                    <div className="flex justify-between text-lg font-semibold text-green-600">
-                      <span>Change:</span>
-                      <span>
-                        Rp{" "}
-                        {(saleData.diterima - saleData.bayar).toLocaleString()}
-                      </span>
-                    </div>
+                    {saleData.payment_method === "cash" && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Received:</span>
+                          <span className="font-medium">
+                            Rp {saleData.diterima.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-lg font-semibold text-green-600">
+                          <span>Change:</span>
+                          <span>
+                            Rp{" "}
+                            {(
+                              saleData.diterima - saleData.bayar
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                    {saleData.payment_method === "transfer" && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div className="flex items-center">
+                          <svg
+                            className="w-5 h-5 text-blue-600 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <span className="text-sm text-blue-800 font-medium">
+                            Customer will pay via bank transfer
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
