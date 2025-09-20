@@ -126,7 +126,8 @@ export async function GET(request: NextRequest) {
           stockStatus,
           lastPurchaseDate,
           lastSaleDate,
-          lastPurchaseSupplier: lastPurchase?.pembelian?.supplier?.nama || null,
+          lastPurchaseSupplier:
+            lastPurchase?.pembelian?.[0]?.supplier?.[0]?.nama || null,
           created_at: category.created_at,
           updated_at: category.updated_at,
         };

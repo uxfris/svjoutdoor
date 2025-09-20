@@ -95,9 +95,15 @@ export async function GET(request: NextRequest) {
     const topCategories = Object.entries(categorySales)
       .map(([name, data]) => ({
         name,
-        revenue: data.revenue,
-        quantity: data.quantity,
-        transactions: data.transactions,
+        revenue: (
+          data as { revenue: number; quantity: number; transactions: number }
+        ).revenue,
+        quantity: (
+          data as { revenue: number; quantity: number; transactions: number }
+        ).quantity,
+        transactions: (
+          data as { revenue: number; quantity: number; transactions: number }
+        ).transactions,
       }))
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 10);
@@ -158,21 +164,44 @@ export async function GET(request: NextRequest) {
         itemGrowth,
       },
       dailySales: Object.values(dailySales).sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        (a, b) =>
+          new Date((a as { date: string }).date).getTime() -
+          new Date((b as { date: string }).date).getTime()
       ),
       categorySales: Object.entries(categorySales).map(([name, data]) => ({
         name,
-        revenue: data.revenue,
-        quantity: data.quantity,
-        transactions: data.transactions,
-        percentage: totalRevenue > 0 ? (data.revenue / totalRevenue) * 100 : 0,
+        revenue: (
+          data as { revenue: number; quantity: number; transactions: number }
+        ).revenue,
+        quantity: (
+          data as { revenue: number; quantity: number; transactions: number }
+        ).quantity,
+        transactions: (
+          data as { revenue: number; quantity: number; transactions: number }
+        ).transactions,
+        percentage:
+          totalRevenue > 0
+            ? ((
+                data as {
+                  revenue: number;
+                  quantity: number;
+                  transactions: number;
+                }
+              ).revenue /
+                totalRevenue) *
+              100
+            : 0,
       })),
       paymentMethods: Object.entries(paymentMethods).map(([method, data]) => ({
         method,
-        count: data.count,
-        revenue: data.revenue,
+        count: (data as { count: number; revenue: number }).count,
+        revenue: (data as { count: number; revenue: number }).revenue,
         percentage:
-          totalTransactions > 0 ? (data.count / totalTransactions) * 100 : 0,
+          totalTransactions > 0
+            ? ((data as { count: number; revenue: number }).count /
+                totalTransactions) *
+              100
+            : 0,
       })),
       topCategories,
       recentSales,
