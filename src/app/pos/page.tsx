@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { createClient } from "@/lib/supabase/client";
 import { Produk, Member } from "@/lib/database.types";
+import { Select } from "@/components/ui/Select";
 
 interface CartItem {
   id_produk: number;
@@ -241,20 +242,19 @@ export default function POSPage() {
               <div className="p-4 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-900">Cart</h2>
                 <div className="mt-2">
-                  <select
-                    value={selectedMember || ""}
+                  <Select
+                    value={selectedMember?.toString() || ""}
                     onChange={(e) =>
                       setSelectedMember(Number(e.target.value) || null)
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="">Walk-in Customer</option>
-                    {members.map((member) => (
-                      <option key={member.id_member} value={member.id_member}>
-                        {member.nama}
-                      </option>
-                    ))}
-                  </select>
+                    options={[
+                      { value: "", label: "Walk-in Customer" },
+                      ...members.map((member) => ({
+                        value: member.id_member.toString(),
+                        label: member.nama,
+                      })),
+                    ]}
+                  />
                 </div>
               </div>
 

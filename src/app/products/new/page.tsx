@@ -10,6 +10,7 @@ import {
   formTextareaClass,
   formLabelClass,
 } from "@/lib/form-styles";
+import { Select } from "@/components/ui/Select";
 
 export default function NewProductPage() {
   const [formData, setFormData] = useState({
@@ -219,32 +220,27 @@ export default function NewProductPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="id_kategori" className={formLabelClass}>
-                    Category *
-                  </label>
-                  <select
+                  <Select
+                    label="Category *"
                     name="id_kategori"
                     id="id_kategori"
                     required
                     value={formData.id_kategori}
                     onChange={handleChange}
-                    className={formSelectClass}
                     disabled={categoriesLoading}
-                  >
-                    <option value="">
-                      {categoriesLoading
-                        ? "Loading categories..."
-                        : "Select a category"}
-                    </option>
-                    {categories.map((category) => (
-                      <option
-                        key={category.id_kategori}
-                        value={category.id_kategori}
-                      >
-                        {category.nama_kategori}
-                      </option>
-                    ))}
-                  </select>
+                    options={[
+                      {
+                        value: "",
+                        label: categoriesLoading
+                          ? "Loading categories..."
+                          : "Select a category",
+                      },
+                      ...categories.map((category) => ({
+                        value: category.id_kategori.toString(),
+                        label: category.nama_kategori,
+                      })),
+                    ]}
+                  />
                 </div>
               </div>
             </div>

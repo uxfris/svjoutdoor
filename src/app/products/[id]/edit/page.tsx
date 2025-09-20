@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { createClient } from "@/lib/supabase/client";
+import { Select } from "@/components/ui/Select";
 
 interface EditProductPageProps {
   params: {
@@ -181,26 +182,20 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category *
-                </label>
-                <select
+                <Select
+                  label="Category *"
                   name="id_kategori"
                   required
                   value={formData.id_kategori}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base"
-                >
-                  <option value="">Select category</option>
-                  {categories.map((category: any) => (
-                    <option
-                      key={category.id_kategori}
-                      value={category.id_kategori}
-                    >
-                      {category.nama_kategori}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: "", label: "Select category" },
+                    ...categories.map((category: any) => ({
+                      value: category.id_kategori.toString(),
+                      label: category.nama_kategori,
+                    })),
+                  ]}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -4,7 +4,10 @@ export const formInputClass =
 export const formInputErrorClass =
   "w-full px-4 py-3 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-base";
 export const formSelectClass =
-  "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white";
+  "w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base bg-white appearance-none";
 export const formTextareaClass =
   "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base resize-none";
 export const formLabelClass = "block text-sm font-medium text-gray-700 mb-2";
+export const formSelectWrapperClass = "relative";
+export const formSelectIconClass =
+  "absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none";

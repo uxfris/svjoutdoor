@@ -1,5 +1,6 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Link from "next/link";
+import { Select } from "@/components/ui/Select";
 
 export default function NewPurchasePage() {
   return (
@@ -51,12 +52,10 @@ export default function NewPurchasePage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-gray-200 rounded-lg">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Product
-                    </label>
-                    <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
-                      <option value="">Select Product</option>
-                    </select>
+                    <Select
+                      label="Product"
+                      options={[{ value: "", label: "Select Product" }]}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
