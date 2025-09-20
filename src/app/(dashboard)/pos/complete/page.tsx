@@ -15,9 +15,10 @@ interface SaleData {
   total_item: number;
   total_harga: number;
   diskon: number;
+  discount_type: "percentage" | "amount";
   bayar: number;
   diterima: number;
-  payment_method: "cash" | "transfer";
+  payment_method: "cash" | "debit";
   created_at: string;
   member?: {
     nama: string;
@@ -27,7 +28,7 @@ interface SaleData {
     name: string;
   };
   items: Array<{
-    nama_produk: string;
+    nama_kategori: string;
     harga_jual: number;
     jumlah: number;
     subtotal: number;
@@ -334,7 +335,7 @@ export default function TransactionCompletePage() {
                           : "bg-blue-100 text-blue-800"
                       }`}
                     >
-                      {saleData.payment_method === "cash" ? "Cash" : "Transfer"}
+                      {saleData.payment_method === "cash" ? "Cash" : "Debit"}
                     </span>
                   </div>
                   {saleData.payment_method === "cash" && (
@@ -356,7 +357,7 @@ export default function TransactionCompletePage() {
                       </div>
                     </>
                   )}
-                  {saleData.payment_method === "transfer" && (
+                  {saleData.payment_method === "debit" && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <div className="flex items-center">
                         <svg
@@ -373,7 +374,7 @@ export default function TransactionCompletePage() {
                           />
                         </svg>
                         <span className="text-sm text-blue-800 font-medium">
-                          Customer will pay via bank transfer
+                          Customer will pay via debit card
                         </span>
                       </div>
                     </div>
@@ -394,7 +395,7 @@ export default function TransactionCompletePage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product
+                    Category
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Price
@@ -411,7 +412,7 @@ export default function TransactionCompletePage() {
                 {saleData.items.map((item, index) => (
                   <tr key={index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.nama_produk}
+                      {item.nama_kategori}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       Rp {item.harga_jual.toLocaleString()}

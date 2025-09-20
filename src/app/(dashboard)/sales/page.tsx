@@ -259,7 +259,7 @@ export default function SalesPage() {
                   >
                     <option value="all">All Payment Methods</option>
                     <option value="cash">Cash</option>
-                    <option value="transfer">Transfer</option>
+                    <option value="debit">Debit</option>
                   </select>
                 </div>
 
@@ -442,7 +442,7 @@ export default function SalesPage() {
                             : "bg-blue-100 text-blue-800"
                         }`}
                       >
-                        {sale.payment_method === "cash" ? "Cash" : "Transfer"}
+                        {sale.payment_method === "cash" ? "Cash" : "Debit"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

@@ -21,10 +21,10 @@ export default async function PurchaseDetailPage({
       *,
       supplier:supplier(nama),
       pembelian_detail(
-        id_produk,
+        id_kategori,
         jumlah,
         subtotal,
-        produk:produk(nama_produk, harga_beli)
+        kategori:kategori(nama_kategori, harga_jual)
       )
     `
     )
@@ -107,7 +107,7 @@ export default async function PurchaseDetailPage({
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product
+                    Category
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Price
@@ -124,10 +124,10 @@ export default async function PurchaseDetailPage({
                 {purchase.pembelian_detail?.map((item: any, index: number) => (
                   <tr key={index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.produk?.nama_produk}
+                      {item.kategori?.nama_kategori}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      Rp {item.produk?.harga_beli.toLocaleString()}
+                      Rp {item.kategori?.harga_jual.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {item.jumlah}

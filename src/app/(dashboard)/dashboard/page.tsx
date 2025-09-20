@@ -7,7 +7,7 @@ import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
 import { LazyWrapper } from "@/components/ui/LazyWrapper";
 import { RecentSale } from "@/lib/database.types";
 import {
-  CubeIcon,
+  TagIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
@@ -35,8 +35,8 @@ interface SaleDetail {
   member?: { nama: string; kode_member: string } | null;
   users?: { name: string; level: number } | null;
   items: {
-    id_produk: number;
-    nama_produk: string;
+    id_kategori: number;
+    nama_kategori: string;
     harga_jual: number;
     jumlah: number;
     diskon: number;
@@ -53,7 +53,7 @@ export default function DashboardPage() {
     { id: string; name: string; level: number }[]
   >([]);
   const [stats, setStats] = useState({
-    totalProducts: 0,
+    totalCategories: 0,
     totalSales: 0,
     totalMembers: 0,
     // Cashier-specific stats
@@ -93,16 +93,19 @@ export default function DashboardPage() {
 
       if (isAdmin) {
         // Admin stats - business overview
-        const [productsResult, salesResult, membersResult] = await Promise.all([
-          supabase.from("produk").select("*", { count: "exact", head: true }),
-          supabase
-            .from("penjualan")
-            .select("*", { count: "exact", head: true }),
-          supabase.from("member").select("*", { count: "exact", head: true }),
-        ]);
+        const [categoriesResult, salesResult, membersResult] =
+          await Promise.all([
+            supabase
+              .from("kategori")
+              .select("*", { count: "exact", head: true }),
+            supabase
+              .from("penjualan")
+              .select("*", { count: "exact", head: true }),
+            supabase.from("member").select("*", { count: "exact", head: true }),
+          ]);
 
         return {
-          totalProducts: productsResult.count || 0,
+          totalCategories: categoriesResult.count || 0,
           totalSales: salesResult.count || 0,
           totalMembers: membersResult.count || 0,
           todaySales: 0,
@@ -120,9 +123,11 @@ export default function DashboardPage() {
         const todayEnd = new Date(todayStart);
         todayEnd.setDate(todayEnd.getDate() + 1);
 
-        const [productsResult, todaySalesResult, mySalesResult] =
+        const [categoriesResult, todaySalesResult, mySalesResult] =
           await Promise.all([
-            supabase.from("produk").select("*", { count: "exact", head: true }),
+            supabase
+              .from("kategori")
+              .select("*", { count: "exact", head: true }),
             supabase
               .from("penjualan")
               .select("total_harga", { count: "exact" })
@@ -142,7 +147,7 @@ export default function DashboardPage() {
           ) || 0;
 
         return {
-          totalProducts: productsResult.count || 0,
+          totalCategories: categoriesResult.count || 0,
           totalSales: 0,
           totalMembers: 0,
           todaySales: todaySalesResult.count || 0,
@@ -190,7 +195,7 @@ export default function DashboardPage() {
           return [];
         }
 
-        // Get all users for manual join
+        // Get all users for manual join (including admins for display purposes)
         const { data: allUsersData, error: allUsersError } = await supabase
           .from("users")
           .select("id, name, level");
@@ -230,11 +235,8 @@ export default function DashboardPage() {
       const supabase = createClient();
 
       if (!isAdmin) {
-        console.log("Not admin, returning empty cashier stats");
         return {};
       }
-
-      console.log("Fetching cashier stats for filter:", cashierTimeFilter);
 
       // Calculate date range based on filter
       const now = new Date();
@@ -270,13 +272,6 @@ export default function DashboardPage() {
           endDate = new Date();
       }
 
-      console.log(
-        "Date range:",
-        startDate.toISOString(),
-        "to",
-        endDate.toISOString()
-      );
-
       // Get all sales in the date range
       let query = supabase
         .from("penjualan")
@@ -296,39 +291,22 @@ export default function DashboardPage() {
         return {};
       }
 
-      // Get all users
+      // Get only cashier users (level 2), exclude admins (level 1)
       const { data: usersData, error: usersError } = await supabase
         .from("users")
-        .select("id, name");
+        .select("id, name, level")
+        .eq("level", 2); // Only get cashiers, not admins
 
       if (usersError) {
         console.error("Error fetching users data:", usersError);
         return {};
       }
 
-      console.log("Sales data:", salesData);
-      console.log("Users data:", usersData);
-
-      // Debug: Let's also try to get all sales without date filter to see if there's any data
-      if (!salesData || salesData.length === 0) {
-        console.log(
-          "No sales found with date filter, trying to get all sales..."
-        );
-        const { data: allSalesData, error: allSalesError } = await supabase
-          .from("penjualan")
-          .select("id_user, total_harga, created_at")
-          .limit(10);
-
-        console.log("All sales data (first 10):", allSalesData);
-        console.log("All sales error:", allSalesError);
-      }
-
       if (!salesData || !usersData) {
-        console.log("No sales or users data found");
         return {};
       }
 
-      // Calculate stats per cashier
+      // Calculate stats per cashier (only level 2 users)
       const stats: {
         [key: string]: {
           name: string;
@@ -347,14 +325,8 @@ export default function DashboardPage() {
             0
           ),
         };
-        console.log(
-          `Cashier ${user.name}: ${userSales.length} sales, Rp ${userSales
-            .reduce((sum, sale) => sum + sale.total_harga, 0)
-            .toLocaleString()}`
-        );
       });
 
-      console.log("Final cashier stats:", stats);
       return stats;
     },
     { ttl: 2 * 60 * 1000 } // 2 minutes cache
@@ -495,7 +467,7 @@ export default function DashboardPage() {
       // Fetch data using cache
       const [statsData, usersData] = await Promise.all([
         fetchDashboardStats(),
-        supabase.from("users").select("id, name, level"),
+        supabase.from("users").select("id, name, level").eq("level", 2), // Only get cashiers
       ]);
 
       setStats(statsData);
@@ -585,12 +557,12 @@ export default function DashboardPage() {
         .from("penjualan_detail")
         .select(
           `
-          id_produk,
+          id_kategori,
           harga_jual,
           jumlah,
           diskon,
           subtotal,
-          produk(nama_produk)
+          kategori(nama_kategori)
         `
         )
         .eq("id_penjualan", saleId);
@@ -603,8 +575,8 @@ export default function DashboardPage() {
       // Format items data
       const formattedItems =
         items?.map((item: any) => ({
-          id_produk: item.id_produk,
-          nama_produk: item.produk?.nama_produk || "Unknown Product",
+          id_kategori: item.id_kategori,
+          nama_kategori: item.kategori?.nama_kategori || "Unknown Category",
           harga_jual: item.harga_jual,
           jumlah: item.jumlah,
           diskon: item.diskon,
@@ -639,9 +611,9 @@ export default function DashboardPage() {
       // Admin dashboard - business overview (hiding member card)
       return [
         {
-          name: "Total Products",
-          value: stats.totalProducts,
-          icon: CubeIcon,
+          name: "Total Categories",
+          value: stats.totalCategories,
+          icon: TagIcon,
           color: "bg-[var(--framer-color-tint)]",
         },
         {

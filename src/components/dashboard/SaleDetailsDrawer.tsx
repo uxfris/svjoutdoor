@@ -15,8 +15,8 @@ interface SaleDetail {
   member?: { nama: string; kode_member: string } | null;
   users?: { name: string; level: number } | null;
   items: {
-    id_produk: number;
-    nama_produk: string;
+    id_kategori: number;
+    nama_kategori: string;
     harga_jual: number;
     jumlah: number;
     diskon: number;
@@ -100,7 +100,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                     Loading sale details...
                   </p>
                   <p className="text-[var(--framer-color-text-secondary)] text-sm mt-1">
-                    Fetching products and transaction information
+                    Fetching categories and transaction information
                   </p>
                 </div>
               </div>
@@ -156,7 +156,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <h4 className="font-medium text-[var(--framer-color-text)]">
-                              {item.nama_produk}
+                              {item.nama_kategori}
                             </h4>
                             <div className="flex items-center space-x-4 mt-2 text-sm text-[var(--framer-color-text-secondary)]">
                               <span>Qty: {item.jumlah}</span>

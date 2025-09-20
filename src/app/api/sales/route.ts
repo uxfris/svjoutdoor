@@ -5,7 +5,14 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const body = await request.json();
-    const { cart, memberId, total, discount = 0, payment } = body;
+    const {
+      cart,
+      memberId,
+      total,
+      discount = 0,
+      discountType = "percentage",
+      payment,
+    } = body;
     const paymentMethod = payment?.method || "cash";
 
     console.log("Sales API - Request body:", body);
@@ -43,6 +50,7 @@ export async function POST(request: NextRequest) {
         ),
         total_harga: total,
         diskon: discount,
+        discount_type: discountType,
         bayar: payment.amount,
         diterima: payment.received,
         payment_method: paymentMethod,
@@ -61,7 +69,7 @@ export async function POST(request: NextRequest) {
     // Create sale details
     const saleDetails = cart.map((item: any) => ({
       id_penjualan: sale.id_penjualan,
-      id_produk: item.id_produk,
+      id_kategori: item.id_kategori,
       harga_jual: item.harga_jual,
       jumlah: item.jumlah,
       subtotal: item.subtotal,
@@ -86,12 +94,15 @@ export async function POST(request: NextRequest) {
 
     console.log("Sales API - Sale details created successfully");
 
-    // Update product stock
+    // Update category stock
     for (const item of cart) {
-      const { error: stockError } = await supabase.rpc("decrease_stock", {
-        product_id: item.id_produk,
-        quantity: item.jumlah,
-      });
+      const { error: stockError } = await supabase.rpc(
+        "decrease_category_stock",
+        {
+          category_id: item.id_kategori,
+          quantity: item.jumlah,
+        }
+      );
 
       if (stockError) {
         console.error("Error updating stock:", stockError);
@@ -123,10 +134,10 @@ export async function GET(request: NextRequest) {
         member:member(nama),
         user:users(name),
         penjualan_detail(
-          id_produk,
+          id_kategori,
           jumlah,
           subtotal,
-          produk:produk(nama_produk)
+          kategori:kategori(nama_kategori)
         )
       `,
       { count: "exact" }

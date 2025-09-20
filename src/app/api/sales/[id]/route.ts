@@ -62,7 +62,7 @@ export async function GET(
       .select(
         `
         *,
-        produk:produk(nama_produk)
+        kategori:kategori(nama_kategori)
       `
       )
       .eq("id_penjualan", saleId);
@@ -80,7 +80,7 @@ export async function GET(
 
     const formattedItems =
       items?.map((item) => ({
-        nama_produk: item.produk?.nama_produk || "Unknown Product",
+        nama_kategori: item.kategori?.nama_kategori || "Unknown Category",
         harga_jual: item.harga_jual,
         jumlah: item.jumlah,
         subtotal: item.subtotal,

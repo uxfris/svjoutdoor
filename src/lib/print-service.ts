@@ -7,6 +7,7 @@ export interface PrintReceiptData {
   total_item: number;
   total_harga: number;
   diskon: number;
+  discount_type: "percentage" | "amount";
   bayar: number;
   diterima: number;
   created_at: string;
@@ -18,7 +19,7 @@ export interface PrintReceiptData {
     name: string;
   };
   items: Array<{
-    nama_produk: string;
+    nama_kategori: string;
     harga_jual: number;
     jumlah: number;
     subtotal: number;
@@ -31,9 +32,9 @@ export interface PrintReceiptData {
 }
 
 export interface PrintBarcodeData {
-  id_produk: number;
-  nama_produk: string;
-  kode_produk: string;
+  id_kategori: number;
+  nama_kategori: string;
+  kode_kategori: string;
   harga_jual: number;
 }
 
@@ -115,7 +116,7 @@ export class PrintService {
     yPosition += 5;
 
     data.items.forEach((item) => {
-      doc.text(item.nama_produk, 20, yPosition);
+      doc.text(item.nama_kategori, 20, yPosition);
       doc.text(item.jumlah.toString(), 120, yPosition);
       doc.text(`Rp ${item.harga_jual.toLocaleString()}`, 140, yPosition);
       doc.text(`Rp ${item.subtotal.toLocaleString()}`, 170, yPosition);
@@ -132,12 +133,19 @@ export class PrintService {
     doc.text(`Rp ${data.total_harga.toLocaleString()}`, 170, yPosition);
     yPosition += 5;
 
-    doc.text(`Discount: ${data.diskon}%`, 20, yPosition);
+    const discountAmount =
+      data.discount_type === "percentage"
+        ? (data.total_harga * data.diskon) / 100
+        : data.diskon;
+
     doc.text(
-      `Rp ${((data.total_harga * data.diskon) / 100).toLocaleString()}`,
-      170,
+      `Discount: ${
+        data.discount_type === "percentage" ? `${data.diskon}%` : "Fixed"
+      }`,
+      20,
       yPosition
     );
+    doc.text(`Rp ${discountAmount.toLocaleString()}`, 170, yPosition);
     yPosition += 5;
 
     doc.text(`Amount to Pay:`, 20, yPosition);
@@ -167,11 +175,11 @@ export class PrintService {
   }
 
   // Barcode printing
-  static async printBarcodes(products: PrintBarcodeData[]): Promise<void> {
+  static async printBarcodes(categories: PrintBarcodeData[]): Promise<void> {
     const printWindow = window.open("", "_blank", "width=800,height=600");
     if (!printWindow) return;
 
-    const barcodeHtml = this.generateBarcodeHTML(products);
+    const barcodeHtml = this.generateBarcodeHTML(categories);
     printWindow.document.write(barcodeHtml);
     printWindow.document.close();
     printWindow.focus();
@@ -275,7 +283,11 @@ export class PrintService {
           </tr>
           <tr>
             <td>Diskon:</td>
-            <td class="right">${data.diskon}%</td>
+            <td class="right">${
+              data.discount_type === "percentage"
+                ? `${data.diskon}%`
+                : `Rp ${data.diskon.toLocaleString()}`
+            }</td>
           </tr>
           <tr>
             <td>Total Bayar:</td>
@@ -300,13 +312,13 @@ export class PrintService {
     `;
   }
 
-  private static generateBarcodeHTML(products: PrintBarcodeData[]): string {
+  private static generateBarcodeHTML(categories: PrintBarcodeData[]): string {
     return `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="UTF-8">
-        <title>Product Barcodes</title>
+        <title>Category Barcodes</title>
         <style>
           body { font-family: Arial, sans-serif; margin: 20px; }
           .barcode-container { 
@@ -318,9 +330,9 @@ export class PrintService {
             width: 200px;
           }
           .barcode { margin: 10px 0; }
-          .product-name { font-weight: bold; margin-bottom: 5px; }
-          .product-price { color: #666; }
-          .product-code { font-size: 12px; margin-top: 5px; }
+          .category-name { font-weight: bold; margin-bottom: 5px; }
+          .category-price { color: #666; }
+          .category-code { font-size: 12px; margin-top: 5px; }
           @media print {
             .no-print { display: none; }
             body { margin: 0; }
@@ -332,14 +344,14 @@ export class PrintService {
         <button class="no-print" onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 10px;">Print</button>
         
         <div style="display: flex; flex-wrap: wrap;">
-          ${products
+          ${categories
             .map(
-              (product) => `
-            <div class="barcode-container">
-              <div class="product-name">${product.nama_produk}</div>
-              <div class="product-price">Rp ${product.harga_jual.toLocaleString()}</div>
-              <svg class="barcode" id="barcode-${product.id_produk}"></svg>
-              <div class="product-code">${product.kode_produk}</div>
+              (category) => `
+              <div class="barcode-container">
+              <div class="category-name">${category.nama_kategori}</div>
+              <div class="category-price">Rp ${category.harga_jual.toLocaleString()}</div>
+              <svg class="barcode" id="barcode-${category.id_kategori}"></svg>
+              <div class="category-code">${category.kode_kategori}</div>
             </div>
           `
             )
@@ -348,10 +360,10 @@ export class PrintService {
         
         <script>
           function generateBarcodes() {
-            ${products
+            ${categories
               .map(
-                (product) => `
-              JsBarcode("#barcode-${product.id_produk}", "${product.kode_produk}", {
+                (category) => `
+              JsBarcode("#barcode-${category.id_kategori}", "${category.kode_kategori}", {
                 format: "CODE128",
                 width: 2,
                 height: 60,

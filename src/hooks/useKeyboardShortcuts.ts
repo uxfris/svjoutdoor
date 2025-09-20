@@ -69,8 +69,8 @@ export const useDashboardShortcuts = () => {
     {
       key: "p",
       ctrlKey: true,
-      action: () => router.push("/products"),
-      description: "Go to Products",
+      action: () => router.push("/categories"),
+      description: "Go to Categories",
     },
     {
       key: "s",

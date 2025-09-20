@@ -19,10 +19,10 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
       *,
       member:member(nama),
       penjualan_detail(
-        id_produk,
+        id_kategori,
         jumlah,
         subtotal,
-        produk:produk(nama_produk, harga_jual)
+        kategori:kategori(nama_kategori, harga_jual)
       )
     `
     )
@@ -86,6 +86,31 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
+                Subtotal
+              </label>
+              <p className="text-lg font-semibold text-gray-900">
+                Rp {(sale.total_harga + sale.diskon).toLocaleString()}
+              </p>
+            </div>
+            {sale.diskon > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Discount
+                </label>
+                <p className="text-lg font-semibold text-red-600">
+                  -Rp {sale.diskon.toLocaleString()}
+                  <span className="text-sm text-gray-500 ml-1">
+                    (
+                    {sale.discount_type === "percentage"
+                      ? `${sale.diskon}%`
+                      : "Fixed amount"}
+                    )
+                  </span>
+                </p>
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
                 Total Amount
               </label>
               <p className="text-lg font-semibold text-green-600">
@@ -103,7 +128,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                     : "bg-blue-100 text-blue-800"
                 }`}
               >
-                {sale.payment_method === "cash" ? "Cash" : "Transfer"}
+                {sale.payment_method === "cash" ? "Cash" : "Debit"}
               </span>
             </div>
           </div>
@@ -119,7 +144,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product
+                    Category
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Price
@@ -136,10 +161,10 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                 {sale.penjualan_detail?.map((item: any, index: number) => (
                   <tr key={index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.produk?.nama_produk}
+                      {item.kategori?.nama_kategori}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      Rp {item.produk?.harga_jual.toLocaleString()}
+                      Rp {item.kategori?.harga_jual.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {item.jumlah}

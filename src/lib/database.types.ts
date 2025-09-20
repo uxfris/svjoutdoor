@@ -49,59 +49,27 @@ export interface Database {
         Row: {
           id_kategori: number;
           nama_kategori: string;
+          harga_jual: number;
+          stok: number;
+          kode_kategori: string;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id_kategori?: number;
           nama_kategori: string;
+          harga_jual: number;
+          stok: number;
+          kode_kategori: string;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id_kategori?: number;
           nama_kategori?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      produk: {
-        Row: {
-          id_produk: number;
-          id_kategori: number;
-          nama_produk: string;
-          merk: string | null;
-          harga_beli: number;
-          diskon: number;
-          harga_jual: number;
-          stok: number;
-          kode_produk: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id_produk?: number;
-          id_kategori: number;
-          nama_produk: string;
-          merk?: string | null;
-          harga_beli: number;
-          diskon?: number;
-          harga_jual: number;
-          stok: number;
-          kode_produk?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id_produk?: number;
-          id_kategori?: number;
-          nama_produk?: string;
-          merk?: string | null;
-          harga_beli?: number;
-          diskon?: number;
           harga_jual?: number;
           stok?: number;
-          kode_produk?: string | null;
+          kode_kategori?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -168,9 +136,10 @@ export interface Database {
           total_item: number;
           total_harga: number;
           diskon: number;
+          discount_type: "percentage" | "amount";
           bayar: number;
           diterima: number;
-          payment_method: "cash" | "transfer";
+          payment_method: "cash" | "debit";
           id_user: string;
           created_at: string;
           updated_at: string;
@@ -181,9 +150,10 @@ export interface Database {
           total_item: number;
           total_harga: number;
           diskon?: number;
+          discount_type?: "percentage" | "amount";
           bayar?: number;
           diterima?: number;
-          payment_method?: "cash" | "transfer";
+          payment_method?: "cash" | "debit";
           id_user: string;
           created_at?: string;
           updated_at?: string;
@@ -194,9 +164,10 @@ export interface Database {
           total_item?: number;
           total_harga?: number;
           diskon?: number;
+          discount_type?: "percentage" | "amount";
           bayar?: number;
           diterima?: number;
-          payment_method?: "cash" | "transfer";
+          payment_method?: "cash" | "debit";
           id_user?: string;
           created_at?: string;
           updated_at?: string;
@@ -206,7 +177,8 @@ export interface Database {
         Row: {
           id_penjualan_detail: number;
           id_penjualan: number;
-          id_produk: number;
+          id_produk: number | null;
+          id_kategori: number | null;
           harga_jual: number;
           jumlah: number;
           diskon: number;
@@ -217,7 +189,8 @@ export interface Database {
         Insert: {
           id_penjualan_detail?: number;
           id_penjualan: number;
-          id_produk: number;
+          id_produk?: number | null;
+          id_kategori?: number | null;
           harga_jual: number;
           jumlah: number;
           diskon?: number;
@@ -228,7 +201,8 @@ export interface Database {
         Update: {
           id_penjualan_detail?: number;
           id_penjualan?: number;
-          id_produk?: number;
+          id_produk?: number | null;
+          id_kategori?: number | null;
           harga_jual?: number;
           jumlah?: number;
           diskon?: number;
@@ -276,7 +250,7 @@ export interface Database {
         Row: {
           id_pembelian_detail: number;
           id_pembelian: number;
-          id_produk: number;
+          id_kategori: number;
           harga_beli: number;
           jumlah: number;
           subtotal: number;
@@ -286,7 +260,7 @@ export interface Database {
         Insert: {
           id_pembelian_detail?: number;
           id_pembelian: number;
-          id_produk: number;
+          id_kategori: number;
           harga_beli: number;
           jumlah: number;
           subtotal: number;
@@ -296,7 +270,7 @@ export interface Database {
         Update: {
           id_pembelian_detail?: number;
           id_pembelian?: number;
-          id_produk?: number;
+          id_kategori?: number;
           harga_beli?: number;
           jumlah?: number;
           subtotal?: number;

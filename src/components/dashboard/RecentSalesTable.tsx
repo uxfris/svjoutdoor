@@ -289,13 +289,13 @@ export const RecentSalesTable = memo(function RecentSalesTable({
               ? "Start making sales to see them here"
               : "Try adjusting your filters or search terms"}
           </p>
-          {/* Debug information */}
+          {/* Debug information
           <div className="text-xs text-[var(--framer-color-text-tertiary)] bg-[var(--framer-color-surface)] p-3 rounded-lg max-w-md mx-auto">
             <p>Debug Info:</p>
             <p>Recent Sales: {recentSales.length}</p>
             <p>Filtered Sales: {filteredSales?.length || 0}</p>
             <p>All Users: {allUsers.length}</p>
-          </div>
+          </div> */}
         </div>
       )}
     </div>

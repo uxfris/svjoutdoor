@@ -7,7 +7,6 @@ import {
   HomeIcon,
   ShoppingCartIcon,
   UserGroupIcon,
-  CubeIcon,
   TagIcon,
   TruckIcon,
   ChartBarIcon,
@@ -23,7 +22,6 @@ import { useLoading } from "./LoadingContext";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, level: [1, 2] },
-  { name: "Products", href: "/products", icon: CubeIcon, level: [1] },
   { name: "Categories", href: "/categories", icon: TagIcon, level: [1] },
   { name: "Members", href: "/members", icon: UserGroupIcon, level: [1] },
   { name: "Suppliers", href: "/suppliers", icon: TruckIcon, level: [1] },
