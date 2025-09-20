@@ -8,10 +8,20 @@ export default function GlobalLoading() {
   if (!isLoading) return null;
 
   return (
-    <div className="absolute inset-0 bg-gray-50 bg-opacity-90 flex items-center justify-center z-10">
-      <div className="bg-white rounded-lg p-6 flex items-center space-x-3 shadow-lg">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-        <span className="text-gray-700 font-medium">Loading...</span>
+    <div className="absolute inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-[var(--framer-color-bg)] backdrop-blur-sm rounded-[var(--framer-radius-xl)] p-8 flex flex-col items-center space-y-4 shadow-lg border border-[var(--framer-color-border)]">
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-[var(--framer-color-border)] rounded-full"></div>
+          <div className="absolute top-0 left-0 w-12 h-12 border-4 border-[var(--framer-color-tint)] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div className="text-center">
+          <p className="text-[var(--framer-color-text)] font-semibold">
+            Loading...
+          </p>
+          <p className="text-[var(--framer-color-text-secondary)] text-sm">
+            Please wait a moment
+          </p>
+        </div>
       </div>
     </div>
   );

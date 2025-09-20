@@ -1,11 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import {
-  MoneyIcon,
-  PackageIcon,
-  ExpenseIcon,
-  ProfitIcon,
-  LossIcon,
-} from "@/components/ui/Icons";
+  CurrencyDollarIcon,
+  CubeIcon,
+  ChartBarIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+} from "@heroicons/react/24/outline";
 import ReportsClient from "./client-reports";
 
 export default async function ReportsPage() {
@@ -75,7 +75,7 @@ export default async function ReportsPage() {
             />
           </div>
           <div className="flex items-end">
-            <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+            <button className="w-full bg-[var(--framer-color-tint)] text-white px-4 py-2 rounded-lg hover:bg-[var(--framer-color-tint-hover)] transition-colors">
               Generate Report
             </button>
           </div>
@@ -86,8 +86,8 @@ export default async function ReportsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <div className="flex items-center">
-            <div className="bg-green-500 rounded-lg p-3 text-white">
-              <MoneyIcon className="w-8 h-8" />
+            <div className="bg-[var(--framer-color-success)] rounded-lg p-3 text-white">
+              <CurrencyDollarIcon className="w-8 h-8" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Sales</p>
@@ -99,8 +99,8 @@ export default async function ReportsPage() {
         </div>
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <div className="flex items-center">
-            <div className="bg-blue-500 rounded-lg p-3 text-white">
-              <PackageIcon className="w-8 h-8" />
+            <div className="bg-[var(--framer-color-tint)] rounded-lg p-3 text-white">
+              <CubeIcon className="w-8 h-8" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">
@@ -114,8 +114,8 @@ export default async function ReportsPage() {
         </div>
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <div className="flex items-center">
-            <div className="bg-red-500 rounded-lg p-3 text-white">
-              <ExpenseIcon className="w-8 h-8" />
+            <div className="bg-[var(--framer-color-error)] rounded-lg p-3 text-white">
+              <ChartBarIcon className="w-8 h-8" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">
@@ -131,13 +131,15 @@ export default async function ReportsPage() {
           <div className="flex items-center">
             <div
               className={`rounded-lg p-3 text-white ${
-                netProfit >= 0 ? "bg-green-500" : "bg-red-500"
+                netProfit >= 0
+                  ? "bg-[var(--framer-color-success)]"
+                  : "bg-[var(--framer-color-error)]"
               }`}
             >
               {netProfit >= 0 ? (
-                <ProfitIcon className="w-8 h-8" />
+                <ArrowTrendingUpIcon className="w-8 h-8" />
               ) : (
-                <LossIcon className="w-8 h-8" />
+                <ArrowTrendingDownIcon className="w-8 h-8" />
               )}
             </div>
             <div className="ml-4">

@@ -564,7 +564,7 @@ export default function POSPage() {
               <button
                 onClick={processSale}
                 disabled={cart.length === 0 || processing}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full bg-[var(--framer-color-tint)] text-white py-2 px-4 rounded-md hover:bg-[var(--framer-color-tint-hover)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {processing ? (
                   <>

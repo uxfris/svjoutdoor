@@ -20,6 +20,17 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Sales API - User:", user.id);
+    console.log("Sales API - User email:", user.email);
+
+    // Let's also check if the user exists in our users table
+    const { data: userProfile, error: userProfileError } = await supabase
+      .from("users")
+      .select("name, level")
+      .eq("id", user.id)
+      .single();
+
+    console.log("Sales API - User profile:", userProfile);
+    console.log("Sales API - User profile error:", userProfileError);
 
     // Create sale transaction
     const { data: sale, error: saleError } = await supabase

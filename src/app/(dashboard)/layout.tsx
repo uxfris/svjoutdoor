@@ -10,6 +10,8 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useLoading } from "@/components/layout/LoadingContext";
 import GlobalLoading from "@/components/layout/GlobalLoading";
+import { useDashboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import KeyboardShortcutsModal from "@/components/ui/KeyboardShortcutsModal";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -23,6 +25,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const supabase = createClient();
   const { endNavigation } = useLoading();
+
+  // Enable keyboard shortcuts
+  useDashboardShortcuts();
 
   // Memoize the auth check to prevent unnecessary re-runs
   const checkAuth = useCallback(async () => {
@@ -75,10 +80,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   // Show loading only during initial auth check
   if (loading && !authChecked) {
     return (
-      <div className="flex h-screen bg-gray-50 items-center justify-center">
-        <div className="bg-white rounded-lg p-6 flex items-center space-x-3 shadow-lg">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-          <span className="text-gray-700 font-medium">Loading...</span>
+      <div className="flex h-screen bg-[var(--framer-color-bg)] items-center justify-center">
+        <div className="bg-[var(--framer-color-bg)] rounded-[var(--framer-radius-lg)] p-6 flex items-center space-x-3 shadow-md border border-[var(--framer-color-border)]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--framer-color-tint)]"></div>
+          <span className="text-[var(--framer-color-text)] font-medium">
+            Loading...
+          </span>
         </div>
       </div>
     );
@@ -89,13 +96,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-[var(--framer-color-bg)]">
       <Sidebar userLevel={user?.level || 2} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         <Header user={user} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 relative">
-          {children}
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[var(--framer-color-bg)] relative">
+          <div className="min-h-full">{children}</div>
           <GlobalLoading />
+          <KeyboardShortcutsModal />
         </main>
       </div>
     </div>
