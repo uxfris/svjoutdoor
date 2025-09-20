@@ -3,6 +3,7 @@
 import { Database } from "@/lib/database.types";
 import { usePathname } from "next/navigation";
 import { ChevronRightIcon, HomeIcon } from "@heroicons/react/24/outline";
+import { memo, useMemo } from "react";
 
 type User = Database["public"]["Tables"]["users"]["Row"];
 
@@ -11,7 +12,7 @@ interface HeaderProps {
 }
 
 // Function to generate breadcrumbs from pathname
-function generateBreadcrumbs(pathname: string) {
+const generateBreadcrumbs = (pathname: string) => {
   const segments = pathname.split("/").filter(Boolean);
   const breadcrumbs = [];
 
@@ -39,11 +40,11 @@ function generateBreadcrumbs(pathname: string) {
   });
 
   return breadcrumbs;
-}
+};
 
-export default function Header({ user }: HeaderProps) {
+const Header = memo(function Header({ user }: HeaderProps) {
   const pathname = usePathname();
-  const breadcrumbs = generateBreadcrumbs(pathname);
+  const breadcrumbs = useMemo(() => generateBreadcrumbs(pathname), [pathname]);
 
   if (!user) {
     return (
@@ -127,4 +128,6 @@ export default function Header({ user }: HeaderProps) {
       </div>
     </header>
   );
-}
+});
+
+export default Header;

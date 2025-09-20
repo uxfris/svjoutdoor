@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, memo } from "react";
 import {
   HomeIcon,
   ShoppingCartIcon,
@@ -41,7 +41,7 @@ interface SidebarProps {
   userLevel: number;
 }
 
-export default function Sidebar({ userLevel }: SidebarProps) {
+const Sidebar = memo(function Sidebar({ userLevel }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -163,4 +163,6 @@ export default function Sidebar({ userLevel }: SidebarProps) {
       </div>
     </>
   );
-}
+});
+
+export default Sidebar;

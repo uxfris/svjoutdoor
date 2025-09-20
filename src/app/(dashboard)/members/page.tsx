@@ -158,60 +158,117 @@ export default function MembersPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Members</h1>
-          <p className="text-gray-600">Manage customer members</p>
-        </div>
-        <div className="flex space-x-2">
-          {selectedMembers.length > 0 && (
-            <>
-              <button
-                onClick={handlePrintMemberCards}
-                disabled={printing}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[var(--framer-color-tint)] hover:bg-[var(--framer-color-tint-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--framer-color-tint)] disabled:opacity-50"
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 flex items-center">
+              <svg
+                className="w-8 h-8 mr-3 text-purple-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <PrinterIcon className="w-5 h-5 mr-2" />
-                {printing
-                  ? "Printing..."
-                  : `Print Cards (${selectedMembers.length})`}
-              </button>
-              <button
-                onClick={handleBulkDelete}
-                disabled={deleting === -1}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-              >
-                <TrashIcon className="w-5 h-5 mr-2" />
-                {deleting === -1
-                  ? "Deleting..."
-                  : `Delete (${selectedMembers.length})`}
-              </button>
-            </>
-          )}
-          <Link
-            href="/members/new"
-            className="bg-[var(--framer-color-tint)] hover:bg-[var(--framer-color-tint-hover)] text-white px-4 py-2 rounded-lg font-medium transition-colors"
-          >
-            Add New Member
-          </Link>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              Member Management
+            </h1>
+            <p className="text-lg text-gray-600 mt-2">
+              Manage customer members and their information
+            </p>
+          </div>
+          <div className="flex space-x-3">
+            {selectedMembers.length > 0 && (
+              <>
+                <button
+                  onClick={handlePrintMemberCards}
+                  disabled={printing}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                >
+                  <PrinterIcon className="w-5 h-5 mr-2" />
+                  {printing
+                    ? "Printing..."
+                    : `Print Cards (${selectedMembers.length})`}
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={deleting === -1}
+                  className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                >
+                  <TrashIcon className="w-5 h-5 mr-2" />
+                  {deleting === -1
+                    ? "Deleting..."
+                    : `Delete (${selectedMembers.length})`}
+                </button>
+              </>
+            )}
+            <Link
+              href="/members/new"
+              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center"
+            >
+              <PlusIcon className="w-5 h-5 mr-2" />
+              Add New Member
+            </Link>
+          </div>
         </div>
       </div>
 
+      {/* Error Message */}
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center">
+            <svg
+              className="w-5 h-5 text-red-600 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span className="text-red-700 font-medium">{error}</span>
+          </div>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Member List</h2>
+      {/* Members Table */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+            <svg
+              className="w-5 h-5 mr-2 text-purple-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+            Member Directory
+          </h2>
+          <p className="text-sm text-gray-600 mt-1">
+            {members.length} {members.length === 1 ? "member" : "members"}{" "}
+            registered
+          </p>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   <input
                     type="checkbox"
                     checked={
@@ -219,29 +276,29 @@ export default function MembersPage() {
                       members.length > 0
                     }
                     onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Member
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Contact
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Address
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {members.map((member) => (
-                <tr key={member.id_member}>
+                <tr
+                  key={member.id_member}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="checkbox"
@@ -249,41 +306,69 @@ export default function MembersPage() {
                       onChange={(e) =>
                         handleSelectMember(member.id_member, e.target.checked)
                       }
-                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {member.nama}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                        <span className="text-lg font-bold text-purple-600">
+                          {member.nama.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-gray-900">
+                          {member.nama}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          ID: {member.kode_member}
+                        </div>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {member.email || "-"}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="space-y-1">
+                      <div className="text-sm text-gray-900">
+                        {member.email || (
+                          <span className="text-gray-400 italic">No email</span>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {member.telepon || (
+                          <span className="text-gray-400 italic">No phone</span>
+                        )}
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {member.telepon || "-"}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-600 max-w-xs truncate">
+                      {member.alamat || (
+                        <span className="text-gray-400 italic">No address</span>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {member.alamat || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex space-x-2">
                       <Link
                         href={`/members/${member.id_member}/edit`}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="inline-flex items-center px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-medium rounded-lg transition-colors"
                       >
-                        <PencilIcon className="w-4 h-4" />
+                        <PencilIcon className="w-3 h-3 mr-1" />
+                        Edit
                       </Link>
                       <button
                         onClick={() =>
                           handleDelete(member.id_member, member.nama)
                         }
                         disabled={deleting === member.id_member}
-                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                        className="inline-flex items-center px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
                       >
                         {deleting === member.id_member ? (
-                          <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                          <div className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-1"></div>
                         ) : (
-                          <TrashIcon className="w-4 h-4" />
+                          <TrashIcon className="w-3 h-3 mr-1" />
                         )}
+                        Delete
                       </button>
                     </div>
                   </td>

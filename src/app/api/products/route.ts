@@ -1,8 +1,25 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  getCachedData,
+  setCachedData,
+  generateCacheKey,
+  shouldCache,
+  clearCache,
+} from "@/lib/api-cache";
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if request should be cached
+    if (shouldCache(request)) {
+      const cacheKey = generateCacheKey(request, "products");
+      const cachedData = getCachedData(cacheKey);
+
+      if (cachedData) {
+        return NextResponse.json(cachedData);
+      }
+    }
+
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -29,7 +46,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({
+    const response = {
       data,
       pagination: {
         page,
@@ -37,7 +54,15 @@ export async function GET(request: NextRequest) {
         total: count || 0,
         pages: Math.ceil((count || 0) / limit),
       },
-    });
+    };
+
+    // Cache the response for 2 minutes
+    if (shouldCache(request)) {
+      const cacheKey = generateCacheKey(request, "products");
+      setCachedData(cacheKey, response, 2 * 60 * 1000);
+    }
+
+    return NextResponse.json(response);
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },
@@ -60,6 +85,9 @@ export async function POST(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    // Clear products cache when new product is added
+    clearCache("products");
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
