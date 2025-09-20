@@ -28,7 +28,7 @@ interface RecentSale {
   total_harga: number;
   created_at: string;
   id_user: string;
-  users?: { name: string; level: number } | null;
+  users: { name: string; level: number }[];
 }
 
 interface SaleDetail {

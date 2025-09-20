@@ -14,7 +14,7 @@ interface RecentSale {
   total_harga: number;
   created_at: string;
   id_user: string;
-  users?: { name: string; level: number } | null;
+  users: { name: string; level: number }[];
 }
 
 interface RecentSalesTableProps {
@@ -237,11 +237,11 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-[var(--framer-color-tint-disabled)] rounded-full flex items-center justify-center mr-3">
                       <span className="text-sm font-medium text-[var(--framer-color-tint)]">
-                        {sale.users?.name?.charAt(0).toUpperCase() || "?"}
+                        {sale.users?.[0]?.name?.charAt(0).toUpperCase() || "?"}
                       </span>
                     </div>
                     <span className="text-sm font-medium text-[var(--framer-color-text)]">
-                      {sale.users?.name ||
+                      {sale.users?.[0]?.name ||
                         (sale.id_user ? "User Not Found" : "No Cashier")}
                     </span>
                   </div>
