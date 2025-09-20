@@ -31,7 +31,6 @@ const navigation = [
   { name: "New Sale", href: "/pos", icon: ShoppingCartIcon, level: [1, 2] },
   { name: "Purchases", href: "/purchases", icon: TruckIcon, level: [1] },
   { name: "Expenses", href: "/expenses", icon: ChartBarIcon, level: [1] },
-  { name: "Reports", href: "/reports", icon: ChartBarIcon, level: [1] },
   { name: "Users", href: "/users", icon: UserIcon, level: [1] },
   { name: "Settings", href: "/settings", icon: CogIcon, level: [1] },
   { name: "Profile", href: "/profile", icon: UserIcon, level: [1, 2] },

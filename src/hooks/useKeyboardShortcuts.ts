@@ -85,12 +85,6 @@ export const useDashboardShortcuts = () => {
       description: "New Sale (POS)",
     },
     {
-      key: "r",
-      ctrlKey: true,
-      action: () => router.push("/reports"),
-      description: "Go to Reports",
-    },
-    {
       key: "m",
       ctrlKey: true,
       action: () => router.push("/members"),

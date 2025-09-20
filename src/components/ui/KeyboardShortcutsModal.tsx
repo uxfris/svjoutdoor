@@ -16,7 +16,6 @@ const shortcuts: KeyboardShortcut[] = [
   { key: "P", ctrlKey: true, description: "Go to Products" },
   { key: "S", ctrlKey: true, description: "Go to Sales" },
   { key: "N", ctrlKey: true, description: "New Sale (POS)" },
-  { key: "R", ctrlKey: true, description: "Go to Reports" },
   { key: "M", ctrlKey: true, description: "Go to Members" },
   { key: "U", ctrlKey: true, description: "Go to Users" },
   { key: "C", ctrlKey: true, description: "Go to Categories" },
