@@ -370,7 +370,7 @@ export default function DashboardPage() {
       filtered = filtered.filter(
         (sale) =>
           sale.id_penjualan.toString().includes(searchTerm) ||
-          (sale.users?.name || "Unknown")
+          (sale.users?.[0]?.name || "Unknown")
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
           sale.total_harga.toString().includes(searchTerm)
