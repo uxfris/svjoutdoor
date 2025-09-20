@@ -13,6 +13,7 @@ interface RecentSalesTableProps {
   recentSales: RecentSale[];
   filteredSales: RecentSale[];
   allUsers: { id: string; name: string; level: number }[];
+  allCategories: { id_kategori: number; nama_kategori: string }[];
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   cashierFilter: string;
@@ -21,6 +22,8 @@ interface RecentSalesTableProps {
   setDateFilter: (filter: string) => void;
   amountFilter: string;
   setAmountFilter: (filter: string) => void;
+  categoryFilter: string;
+  setCategoryFilter: (filter: string) => void;
   showFilters: boolean;
   setShowFilters: (show: boolean) => void;
   onClearFilters: () => void;
@@ -33,6 +36,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
   recentSales,
   filteredSales,
   allUsers,
+  allCategories,
   searchTerm,
   setSearchTerm,
   cashierFilter,
@@ -41,6 +45,8 @@ export const RecentSalesTable = memo(function RecentSalesTable({
   setDateFilter,
   amountFilter,
   setAmountFilter,
+  categoryFilter,
+  setCategoryFilter,
   showFilters,
   setShowFilters,
   onClearFilters,
@@ -53,8 +59,16 @@ export const RecentSalesTable = memo(function RecentSalesTable({
       searchTerm ||
       (isAdmin && cashierFilter !== "all") ||
       dateFilter !== "all" ||
-      amountFilter !== "all",
-    [searchTerm, cashierFilter, dateFilter, amountFilter, isAdmin]
+      amountFilter !== "all" ||
+      categoryFilter !== "all",
+    [
+      searchTerm,
+      cashierFilter,
+      dateFilter,
+      amountFilter,
+      categoryFilter,
+      isAdmin,
+    ]
   );
 
   return (
@@ -119,7 +133,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
           <div className="mt-4 pt-4 border-t border-[var(--framer-color-border)]">
             <div
               className={`grid grid-cols-1 gap-4 ${
-                isAdmin ? "md:grid-cols-3" : "md:grid-cols-2"
+                isAdmin ? "md:grid-cols-4" : "md:grid-cols-3"
               }`}
             >
               {/* Cashier Filter - Only show for admins */}
@@ -128,18 +142,35 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                   <label className="block text-sm font-medium text-[var(--framer-color-text-secondary)] mb-2">
                     Cashier
                   </label>
-                  <select
-                    value={cashierFilter}
-                    onChange={(e) => setCashierFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)]"
-                  >
-                    <option value="all">All Cashiers</option>
-                    {allUsers.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={cashierFilter}
+                      onChange={(e) => setCashierFilter(e.target.value)}
+                      className="w-full px-3 py-2 pr-10 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)] appearance-none"
+                    >
+                      <option value="all">All Cashiers</option>
+                      {allUsers.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg
+                        className="w-4 h-4 text-[var(--framer-color-text-tertiary)]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -148,17 +179,34 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                 <label className="block text-sm font-medium text-[var(--framer-color-text-secondary)] mb-2">
                   Date Range
                 </label>
-                <select
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)]"
-                >
-                  <option value="all">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="yesterday">Yesterday</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    className="w-full px-3 py-2 pr-10 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)] appearance-none"
+                  >
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg
+                      className="w-4 h-4 text-[var(--framer-color-text-tertiary)]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               {/* Amount Filter */}
@@ -166,16 +214,72 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                 <label className="block text-sm font-medium text-[var(--framer-color-text-secondary)] mb-2">
                   Amount Range
                 </label>
-                <select
-                  value={amountFilter}
-                  onChange={(e) => setAmountFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)]"
-                >
-                  <option value="all">All Amounts</option>
-                  <option value="low">Low (&lt; 100k)</option>
-                  <option value="medium">Medium (100k - 500k)</option>
-                  <option value="high">High (&gt; 500k)</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={amountFilter}
+                    onChange={(e) => setAmountFilter(e.target.value)}
+                    className="w-full px-3 py-2 pr-10 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)] appearance-none"
+                  >
+                    <option value="all">All Amounts</option>
+                    <option value="low">Low (&lt; 100k)</option>
+                    <option value="medium">Medium (100k - 500k)</option>
+                    <option value="high">High (&gt; 500k)</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg
+                      className="w-4 h-4 text-[var(--framer-color-text-tertiary)]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div>
+                <label className="block text-sm font-medium text-[var(--framer-color-text-secondary)] mb-2">
+                  Category
+                </label>
+                <div className="relative">
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className="w-full px-3 py-2 pr-10 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)] appearance-none"
+                  >
+                    <option value="all">All Categories</option>
+                    {allCategories.map((category) => (
+                      <option
+                        key={category.id_kategori}
+                        value={category.id_kategori.toString()}
+                      >
+                        {category.nama_kategori}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg
+                      className="w-4 h-4 text-[var(--framer-color-text-tertiary)]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

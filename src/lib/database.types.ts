@@ -14,6 +14,10 @@ export interface RecentSale {
   created_at: string;
   id_user: string;
   users?: { name: string; level: number } | null;
+  penjualan_detail?: {
+    id_kategori: number;
+    kategori: { nama_kategori: string } | null;
+  }[];
 }
 
 export interface Database {

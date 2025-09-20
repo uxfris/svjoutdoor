@@ -55,6 +55,9 @@ export default function DashboardPage() {
   const [allUsers, setAllUsers] = useState<
     { id: string; name: string; level: number }[]
   >([]);
+  const [allCategories, setAllCategories] = useState<
+    { id_kategori: number; nama_kategori: string }[]
+  >([]);
   const [stats, setStats] = useState({
     totalCategories: 0,
     totalSales: 0,
@@ -79,6 +82,7 @@ export default function DashboardPage() {
   const [cashierFilter, setCashierFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [amountFilter, setAmountFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [cashierTimeFilter, setCashierTimeFilter] = useState("today");
   const [categoryTimeFilter, setCategoryTimeFilter] = useState("today");
@@ -173,7 +177,7 @@ export default function DashboardPage() {
 
         const supabase = createClient();
 
-        // Try a simpler approach first - get sales without join
+        // Get sales with category information from sale details
         let salesQuery = supabase
           .from("penjualan")
           .select(
@@ -182,7 +186,11 @@ export default function DashboardPage() {
             total_item,
             total_harga,
             created_at,
-            id_user
+            id_user,
+            penjualan_detail(
+              id_kategori,
+              kategori(nama_kategori)
+            )
           `
           )
           .order("created_at", { ascending: false })
@@ -401,8 +409,27 @@ export default function DashboardPage() {
       });
     }
 
+    // Category filter
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter((sale) => {
+        if (!sale.penjualan_detail || sale.penjualan_detail.length === 0) {
+          return false;
+        }
+        return sale.penjualan_detail.some(
+          (detail) => detail.id_kategori.toString() === categoryFilter
+        );
+      });
+    }
+
     return filtered;
-  }, [recentSales, searchTerm, cashierFilter, dateFilter, amountFilter]);
+  }, [
+    recentSales,
+    searchTerm,
+    cashierFilter,
+    dateFilter,
+    amountFilter,
+    categoryFilter,
+  ]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -469,13 +496,18 @@ export default function DashboardPage() {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Fetch data using cache
-      const [statsData, usersData] = await Promise.all([
+      const [statsData, usersData, categoriesData] = await Promise.all([
         fetchDashboardStats(),
         supabase.from("users").select("id, name, level").eq("level", 2), // Only get cashiers
+        supabase
+          .from("kategori")
+          .select("id_kategori, nama_kategori")
+          .order("nama_kategori"),
       ]);
 
       setStats(statsData);
       setAllUsers(usersData.data || []);
+      setAllCategories(categoriesData.data || []);
 
       // Fetch recent sales after user and admin status are set
       const recentSalesData = await fetchRecentSales();
@@ -504,6 +536,7 @@ export default function DashboardPage() {
     setCashierFilter("all");
     setDateFilter("all");
     setAmountFilter("all");
+    setCategoryFilter("all");
   }, []);
 
   const fetchSaleDetails = useCallback(async (saleId: number) => {
@@ -824,6 +857,7 @@ export default function DashboardPage() {
         recentSales={recentSales}
         filteredSales={filteredSales}
         allUsers={allUsers}
+        allCategories={allCategories}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         cashierFilter={cashierFilter}
@@ -832,6 +866,8 @@ export default function DashboardPage() {
         setDateFilter={setDateFilter}
         amountFilter={amountFilter}
         setAmountFilter={setAmountFilter}
+        categoryFilter={categoryFilter}
+        setCategoryFilter={setCategoryFilter}
         showFilters={showFilters}
         setShowFilters={setShowFilters}
         onClearFilters={clearFilters}

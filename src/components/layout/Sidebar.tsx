@@ -16,6 +16,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   BuildingStorefrontIcon,
+  DocumentChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { createClient } from "@/lib/supabase/client";
 import { useLoading } from "./LoadingContext";
@@ -23,6 +24,7 @@ import { useLoading } from "./LoadingContext";
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, level: [1, 2] },
   { name: "Categories", href: "/categories", icon: TagIcon, level: [1] },
+  { name: "Reports", href: "/reports", icon: DocumentChartBarIcon, level: [1] },
   { name: "Members", href: "/members", icon: UserGroupIcon, level: [1] },
   { name: "Suppliers", href: "/suppliers", icon: TruckIcon, level: [1] },
   { name: "Sales", href: "/sales", icon: ShoppingCartIcon, level: [1] },
