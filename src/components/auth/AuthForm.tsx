@@ -3,19 +3,38 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import ForgotPasswordModal from "./ForgotPasswordModal";
 
 interface AuthFormProps {
   mode: "signin" | "signup";
+  error?: string;
 }
 
-export default function AuthForm({ mode }: AuthFormProps) {
+export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError || "");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+
+  // Map error codes to user-friendly messages
+  const getErrorMessage = (errorCode: string) => {
+    switch (errorCode) {
+      case "invalid_reset_link":
+        return "Invalid or expired password reset link. Please request a new one.";
+      case "session_not_created":
+        return "Unable to create session. Please try again.";
+      case "no_reset_tokens":
+        return "No reset tokens found. Please request a new password reset.";
+      case "reset_failed":
+        return "Password reset failed. Please try again.";
+      default:
+        return initialError || "";
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,8 +143,22 @@ export default function AuthForm({ mode }: AuthFormProps) {
             </div>
           </div>
 
+          {mode === "signin" && (
+            <div className="flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm text-indigo-600 hover:text-indigo-500"
+              >
+                Forgot your password?
+              </button>
+            </div>
+          )}
+
           {error && (
-            <div className="text-red-600 text-sm text-center">{error}</div>
+            <div className="text-red-600 text-sm text-center">
+              {getErrorMessage(error)}
+            </div>
           )}
 
           <div>
@@ -167,6 +200,11 @@ export default function AuthForm({ mode }: AuthFormProps) {
           </div>
         </form>
       </div>
+
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </div>
   );
 }

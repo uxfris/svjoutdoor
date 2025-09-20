@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       console.log("Sales API - Payment method length:", paymentMethod?.length);
       console.log(
         "Sales API - Payment method char codes:",
-        paymentMethod?.split("").map((c) => c.charCodeAt(0))
+        paymentMethod?.split("").map((c: string) => c.charCodeAt(0))
       );
       return NextResponse.json(
         {

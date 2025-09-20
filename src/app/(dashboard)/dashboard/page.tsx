@@ -28,6 +28,7 @@ interface SaleDetail {
   total_item: number;
   total_harga: number;
   diskon: number;
+  discount_type: "percentage" | "amount";
   bayar: number;
   diterima: number;
   payment_method: string;
@@ -40,6 +41,7 @@ interface SaleDetail {
     harga_jual: number;
     jumlah: number;
     diskon: number;
+    discount_type: "percentage" | "amount";
     subtotal: number;
   }[];
 }
