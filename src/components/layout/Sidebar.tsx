@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useCallback } from "react";
 import {
   HomeIcon,
   ShoppingCartIcon,
@@ -15,7 +16,7 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useLoading } from "./LoadingContext";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, level: [1, 2] },
@@ -41,11 +42,30 @@ export default function Sidebar({ userLevel }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const { startNavigation } = useLoading();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/login");
   };
+
+  const handleNavigation = useCallback(
+    (href: string) => {
+      if (pathname !== href) {
+        startNavigation();
+      }
+    },
+    [pathname, startNavigation]
+  );
+
+  const handlePrefetch = useCallback(
+    (href: string) => {
+      if (pathname !== href) {
+        router.prefetch(href);
+      }
+    },
+    [pathname, router]
+  );
 
   const filteredNavigation = navigation.filter((item) =>
     item.level.includes(userLevel)
@@ -64,7 +84,9 @@ export default function Sidebar({ userLevel }: SidebarProps) {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              onClick={() => handleNavigation(item.href)}
+              onMouseEnter={() => handlePrefetch(item.href)}
+              className={`flex items-center w-full px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 isActive
                   ? "bg-indigo-100 text-indigo-700"
                   : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
