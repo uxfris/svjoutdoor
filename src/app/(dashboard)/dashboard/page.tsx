@@ -78,6 +78,7 @@ export default function DashboardPage() {
       totalDebit: number;
     };
   }>({});
+  const [cashierStatsLoading, setCashierStatsLoading] = useState(false);
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -467,9 +468,16 @@ export default function DashboardPage() {
   // Refetch cashier stats when time filter changes
   useEffect(() => {
     if (isAdmin) {
-      fetchCashierStats().then((data) => {
-        setCashierStats(data);
-      });
+      setCashierStatsLoading(true);
+      fetchCashierStats()
+        .then((data) => {
+          setCashierStats(data);
+          setCashierStatsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching cashier stats:", error);
+          setCashierStatsLoading(false);
+        });
     }
   }, [cashierTimeFilter, isAdmin, fetchCashierStats]);
 
@@ -766,7 +774,12 @@ export default function DashboardPage() {
                 <select
                   value={cashierTimeFilter}
                   onChange={(e) => setCashierTimeFilter(e.target.value)}
-                  className="appearance-none bg-white px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors cursor-pointer min-w-[140px]"
+                  disabled={cashierStatsLoading}
+                  className={`appearance-none px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent text-sm font-medium transition-colors cursor-pointer min-w-[140px] ${
+                    cashierStatsLoading
+                      ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
+                  }`}
                 >
                   <option value="today">Today</option>
                   <option value="yesterday">Yesterday</option>
@@ -775,149 +788,251 @@ export default function DashboardPage() {
                   <option value="all">All Time</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg
-                    className="w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
+                  {cashierStatsLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-600"></div>
+                  ) : (
+                    <svg
+                      className="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {Object.entries(cashierStats).map(([cashierId, data]) => (
-              <div
-                key={cashierId}
-                className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer"
-              >
-                {/* Header Section */}
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center">
-                    <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                      <span className="text-xl font-bold text-white">
-                        {data.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                        {data.name}
-                      </h3>
-                      <p className="text-sm text-gray-500 font-medium">
-                        Cashier
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Metrics Section */}
-                <div className="space-y-5">
-                  {/* Total Sales */}
-                  <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+            {cashierStatsLoading ? (
+              // Loading skeleton for cashier cards
+              <>
+                <div className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 animate-pulse">
+                  <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center">
-                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                        <CurrencyDollarIcon className="w-4 h-4 text-green-600" />
+                      <div className="w-14 h-14 bg-gray-200 rounded-2xl mr-4"></div>
+                      <div>
+                        <div className="h-6 bg-gray-200 rounded w-24 mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-16"></div>
                       </div>
-                      <span className="text-sm font-semibold text-gray-700">
-                        Total Sales
-                      </span>
-                    </div>
-                    <span className="text-xl font-bold text-green-600">
-                      {data.totalSales}
-                    </span>
-                  </div>
-
-                  {/* Payment Methods Section */}
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                      Payment Breakdown
-                    </h4>
-
-                    {/* Cash */}
-                    <div className="flex justify-between items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center mr-3">
-                          <svg
-                            className="w-4 h-4 text-green-700"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-semibold text-gray-700">
-                          Cash
-                        </span>
-                      </div>
-                      <span className="text-lg font-bold text-green-600">
-                        Rp {data.totalCash.toLocaleString()}
-                      </span>
-                    </div>
-
-                    {/* Debit */}
-                    <div className="flex justify-between items-center p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center mr-3">
-                          <svg
-                            className="w-4 h-4 text-purple-700"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-semibold text-gray-700">
-                          Debit
-                        </span>
-                      </div>
-                      <span className="text-lg font-bold text-purple-600">
-                        Rp {data.totalDebit.toLocaleString()}
-                      </span>
                     </div>
                   </div>
-
-                  {/* Total Revenue - Separated with visual divider */}
-                  <div className="border-t border-gray-200 pt-5">
-                    <div className="flex justify-between items-center p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all">
+                  <div className="space-y-5">
+                    <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
                       <div className="flex items-center">
-                        <div className="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center mr-3">
-                          <CurrencyDollarIcon className="w-4 h-4 text-blue-700" />
-                        </div>
-                        <span className="text-sm font-bold text-gray-800">
-                          Total Revenue
-                        </span>
+                        <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
                       </div>
-                      <span className="text-xl font-bold text-blue-700">
-                        Rp {data.totalRevenue.toLocaleString()}
-                      </span>
+                      <div className="h-6 bg-gray-200 rounded w-12"></div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="h-3 bg-gray-200 rounded w-32 mb-3"></div>
+                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
+                          <div className="h-4 bg-gray-200 rounded w-12"></div>
+                        </div>
+                        <div className="h-5 bg-gray-200 rounded w-20"></div>
+                      </div>
+                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
+                          <div className="h-4 bg-gray-200 rounded w-12"></div>
+                        </div>
+                        <div className="h-5 bg-gray-200 rounded w-20"></div>
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-200 pt-5">
+                      <div className="flex justify-between items-center p-5 bg-gray-100 rounded-xl">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
+                          <div className="h-4 bg-gray-200 rounded w-24"></div>
+                        </div>
+                        <div className="h-6 bg-gray-200 rounded w-24"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+                <div className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 animate-pulse">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center">
+                      <div className="w-14 h-14 bg-gray-200 rounded-2xl mr-4"></div>
+                      <div>
+                        <div className="h-6 bg-gray-200 rounded w-24 mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-5">
+                    <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      </div>
+                      <div className="h-6 bg-gray-200 rounded w-12"></div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="h-3 bg-gray-200 rounded w-32 mb-3"></div>
+                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
+                          <div className="h-4 bg-gray-200 rounded w-12"></div>
+                        </div>
+                        <div className="h-5 bg-gray-200 rounded w-20"></div>
+                      </div>
+                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
+                          <div className="h-4 bg-gray-200 rounded w-12"></div>
+                        </div>
+                        <div className="h-5 bg-gray-200 rounded w-20"></div>
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-200 pt-5">
+                      <div className="flex justify-between items-center p-5 bg-gray-100 rounded-xl">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
+                          <div className="h-4 bg-gray-200 rounded w-24"></div>
+                        </div>
+                        <div className="h-6 bg-gray-200 rounded w-24"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              Object.entries(cashierStats).map(([cashierId, data]) => (
+                <div
+                  key={cashierId}
+                  className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+                >
+                  {/* Header Section */}
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center">
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
+                        <span className="text-xl font-bold text-white">
+                          {data.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          {data.name}
+                        </h3>
+                        <p className="text-sm text-gray-500 font-medium">
+                          Cashier
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Metrics Section */}
+                  <div className="space-y-5">
+                    {/* Total Sales */}
+                    <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                          <CurrencyDollarIcon className="w-4 h-4 text-green-600" />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700">
+                          Total Sales
+                        </span>
+                      </div>
+                      <span className="text-xl font-bold text-green-600">
+                        {data.totalSales}
+                      </span>
+                    </div>
+
+                    {/* Payment Methods Section */}
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                        Payment Breakdown
+                      </h4>
+
+                      {/* Cash */}
+                      <div className="flex justify-between items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center mr-3">
+                            <svg
+                              className="w-4 h-4 text-green-700"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                              />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-700">
+                            Cash
+                          </span>
+                        </div>
+                        <span className="text-lg font-bold text-green-600">
+                          Rp {data.totalCash.toLocaleString()}
+                        </span>
+                      </div>
+
+                      {/* Debit */}
+                      <div className="flex justify-between items-center p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center mr-3">
+                            <svg
+                              className="w-4 h-4 text-purple-700"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                              />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-700">
+                            Debit
+                          </span>
+                        </div>
+                        <span className="text-lg font-bold text-purple-600">
+                          Rp {data.totalDebit.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Total Revenue - Separated with visual divider */}
+                    <div className="border-t border-gray-200 pt-5">
+                      <div className="flex justify-between items-center p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center mr-3">
+                            <CurrencyDollarIcon className="w-4 h-4 text-blue-700" />
+                          </div>
+                          <span className="text-sm font-bold text-gray-800">
+                            Total Revenue
+                          </span>
+                        </div>
+                        <span className="text-xl font-bold text-blue-700">
+                          Rp {data.totalRevenue.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
-          {Object.keys(cashierStats).length === 0 && (
+          {!cashierStatsLoading && Object.keys(cashierStats).length === 0 && (
             <div className="text-center py-12 bg-gray-50 rounded-xl">
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
                 <UserGroupIcon className="w-8 h-8 text-gray-400" />
