@@ -74,6 +74,8 @@ export default function DashboardPage() {
       name: string;
       totalSales: number;
       totalRevenue: number;
+      totalCash: number;
+      totalDebit: number;
     };
   }>({});
 
@@ -287,7 +289,7 @@ export default function DashboardPage() {
       // Get all sales in the date range
       let query = supabase
         .from("penjualan")
-        .select("id_user, total_harga, created_at");
+        .select("id_user, total_harga, payment_method, created_at");
 
       // Only apply date filters if not "all time"
       if (cashierTimeFilter !== "all") {
@@ -324,15 +326,29 @@ export default function DashboardPage() {
           name: string;
           totalSales: number;
           totalRevenue: number;
+          totalCash: number;
+          totalDebit: number;
         };
       } = {};
 
       usersData.forEach((user) => {
         const userSales = salesData.filter((sale) => sale.id_user === user.id);
+        const cashSales = userSales.filter(
+          (sale) => sale.payment_method === "cash"
+        );
+        const debitSales = userSales.filter(
+          (sale) => sale.payment_method === "debit"
+        );
+
         stats[user.id] = {
           name: user.name,
           totalSales: userSales.length,
           totalRevenue: userSales.reduce(
+            (sum, sale) => sum + sale.total_harga,
+            0
+          ),
+          totalCash: cashSales.reduce((sum, sale) => sum + sale.total_harga, 0),
+          totalDebit: debitSales.reduce(
             (sum, sale) => sum + sale.total_harga,
             0
           ),
@@ -777,39 +793,124 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {Object.entries(cashierStats).map(([cashierId, data]) => (
               <div
                 key={cashierId}
-                className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow"
+                className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer"
               >
-                <div className="flex items-center justify-between mb-4">
+                {/* Header Section */}
+                <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-lg font-bold text-blue-600">
+                    <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
+                      <span className="text-xl font-bold text-white">
                         {data.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                         {data.name}
                       </h3>
-                      <p className="text-sm text-gray-500">Cashier</p>
+                      <p className="text-sm text-gray-500 font-medium">
+                        Cashier
+                      </p>
                     </div>
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Total Sales</span>
-                    <span className="text-lg font-bold text-green-600">
+
+                {/* Metrics Section */}
+                <div className="space-y-5">
+                  {/* Total Sales */}
+                  <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <CurrencyDollarIcon className="w-4 h-4 text-green-600" />
+                      </div>
+                      <span className="text-sm font-semibold text-gray-700">
+                        Total Sales
+                      </span>
+                    </div>
+                    <span className="text-xl font-bold text-green-600">
                       {data.totalSales}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Total Revenue</span>
-                    <span className="text-lg font-bold text-blue-600">
-                      Rp {data.totalRevenue.toLocaleString()}
-                    </span>
+
+                  {/* Payment Methods Section */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                      Payment Breakdown
+                    </h4>
+
+                    {/* Cash */}
+                    <div className="flex justify-between items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center mr-3">
+                          <svg
+                            className="w-4 h-4 text-green-700"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                            />
+                          </svg>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700">
+                          Cash
+                        </span>
+                      </div>
+                      <span className="text-lg font-bold text-green-600">
+                        Rp {data.totalCash.toLocaleString()}
+                      </span>
+                    </div>
+
+                    {/* Debit */}
+                    <div className="flex justify-between items-center p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center mr-3">
+                          <svg
+                            className="w-4 h-4 text-purple-700"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                            />
+                          </svg>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700">
+                          Debit
+                        </span>
+                      </div>
+                      <span className="text-lg font-bold text-purple-600">
+                        Rp {data.totalDebit.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Total Revenue - Separated with visual divider */}
+                  <div className="border-t border-gray-200 pt-5">
+                    <div className="flex justify-between items-center p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center mr-3">
+                          <CurrencyDollarIcon className="w-4 h-4 text-blue-700" />
+                        </div>
+                        <span className="text-sm font-bold text-gray-800">
+                          Total Revenue
+                        </span>
+                      </div>
+                      <span className="text-xl font-bold text-blue-700">
+                        Rp {data.totalRevenue.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

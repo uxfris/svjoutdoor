@@ -1,16 +1,29 @@
 import { createClient } from "@/lib/supabase/server";
+import DataResetSection from "./DataResetSection";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
 
   const { data: settings, error } = await supabase
-    .from("settings")
+    .from("setting")
     .select("*")
     .single();
 
   if (error) {
     console.error("Error fetching settings:", error);
   }
+
+  // Get current user info to check admin level
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: userData } = await supabase
+    .from("users")
+    .select("level")
+    .eq("id", user?.id)
+    .single();
+
+  const isAdmin = userData?.level === 1;
 
   return (
     <div className="p-6">
@@ -132,6 +145,9 @@ export default async function SettingsPage() {
             Save Settings
           </button>
         </div>
+
+        {/* Data Reset Section - Admin Only */}
+        {isAdmin && <DataResetSection />}
       </div>
     </div>
   );
