@@ -39,6 +39,10 @@ interface SaleData {
     nama_perusahaan: string;
     alamat: string;
     telepon: string;
+    receipt_width_mm?: number;
+    receipt_font_size?: number;
+    receipt_paper_type?: string;
+    receipt_footer?: string;
   };
 }
 
@@ -261,6 +265,202 @@ export default function TransactionCompletePage() {
               <p className="text-green-700">
                 The sale has been processed and recorded successfully.
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Print Actions */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-6 w-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                  />
+                </svg>
+              </div>
+              <h2 className="ml-3 text-lg font-semibold text-white">
+                Print Options
+              </h2>
+            </div>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Small Receipt Button */}
+              <button
+                onClick={handlePrintSmallReceipt}
+                disabled={printing}
+                className="group relative flex flex-col items-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:from-blue-100 hover:to-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md"
+              >
+                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-700 transition-colors duration-200">
+                  <PrinterIcon className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Small Receipt
+                </h3>
+                <p className="text-sm text-gray-600 text-center mb-4">
+                  Print a compact receipt for quick transactions
+                </p>
+                <div className="w-full">
+                  {printing ? (
+                    <div className="flex items-center justify-center text-blue-600 font-medium">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Printing...
+                    </div>
+                  ) : (
+                    <div className="text-blue-600 font-medium text-center">
+                      Click to Print
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              {/* Large Receipt Button */}
+              <button
+                onClick={handlePrintLargeReceipt}
+                disabled={printing}
+                className="group relative flex flex-col items-center p-6 bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl hover:from-green-100 hover:to-green-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md"
+              >
+                <div className="flex-shrink-0 w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-700 transition-colors duration-200">
+                  <DocumentArrowDownIcon className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Large Receipt (PDF)
+                </h3>
+                <p className="text-sm text-gray-600 text-center mb-4">
+                  Generate a detailed PDF receipt for records
+                </p>
+                <div className="w-full">
+                  {printing ? (
+                    <div className="flex items-center justify-center text-green-600 font-medium">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-green-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Generating...
+                    </div>
+                  ) : (
+                    <div className="text-green-600 font-medium text-center">
+                      Click to Generate
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              {/* New Transaction Button */}
+              <button
+                onClick={handleNewTransaction}
+                disabled={navigating}
+                className="group relative flex flex-col items-center p-6 bg-gradient-to-br from-indigo-50 to-purple-100 border border-indigo-200 rounded-xl hover:from-indigo-100 hover:to-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md"
+              >
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:from-indigo-700 group-hover:to-purple-700 transition-all duration-200">
+                  {navigating ? (
+                    <svg
+                      className="animate-spin h-6 w-6 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  ) : (
+                    <ArrowLeftIcon className="w-6 h-6 text-white" />
+                  )}
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  New Transaction
+                </h3>
+                <p className="text-sm text-gray-600 text-center mb-4">
+                  Start a new sale transaction
+                </p>
+                <div className="w-full">
+                  {navigating ? (
+                    <div className="flex items-center justify-center text-indigo-600 font-medium">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Starting...
+                    </div>
+                  ) : (
+                    <div className="text-indigo-600 font-medium text-center">
+                      Click to Start
+                    </div>
+                  )}
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -932,202 +1132,6 @@ export default function TransactionCompletePage() {
                 ))}
               </tbody>
             </table>
-          </div>
-        </div>
-
-        {/* Print Actions */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-4">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-6 w-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                  />
-                </svg>
-              </div>
-              <h2 className="ml-3 text-lg font-semibold text-white">
-                Print Options
-              </h2>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Small Receipt Button */}
-              <button
-                onClick={handlePrintSmallReceipt}
-                disabled={printing}
-                className="group relative flex flex-col items-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:from-blue-100 hover:to-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md"
-              >
-                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-700 transition-colors duration-200">
-                  <PrinterIcon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Small Receipt
-                </h3>
-                <p className="text-sm text-gray-600 text-center mb-4">
-                  Print a compact receipt for quick transactions
-                </p>
-                <div className="w-full">
-                  {printing ? (
-                    <div className="flex items-center justify-center text-blue-600 font-medium">
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Printing...
-                    </div>
-                  ) : (
-                    <div className="text-blue-600 font-medium text-center">
-                      Click to Print
-                    </div>
-                  )}
-                </div>
-              </button>
-
-              {/* Large Receipt Button */}
-              <button
-                onClick={handlePrintLargeReceipt}
-                disabled={printing}
-                className="group relative flex flex-col items-center p-6 bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl hover:from-green-100 hover:to-green-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md"
-              >
-                <div className="flex-shrink-0 w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-700 transition-colors duration-200">
-                  <DocumentArrowDownIcon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Large Receipt (PDF)
-                </h3>
-                <p className="text-sm text-gray-600 text-center mb-4">
-                  Generate a detailed PDF receipt for records
-                </p>
-                <div className="w-full">
-                  {printing ? (
-                    <div className="flex items-center justify-center text-green-600 font-medium">
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-green-600"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Generating...
-                    </div>
-                  ) : (
-                    <div className="text-green-600 font-medium text-center">
-                      Click to Generate
-                    </div>
-                  )}
-                </div>
-              </button>
-
-              {/* New Transaction Button */}
-              <button
-                onClick={handleNewTransaction}
-                disabled={navigating}
-                className="group relative flex flex-col items-center p-6 bg-gradient-to-br from-indigo-50 to-purple-100 border border-indigo-200 rounded-xl hover:from-indigo-100 hover:to-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-md"
-              >
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:from-indigo-700 group-hover:to-purple-700 transition-all duration-200">
-                  {navigating ? (
-                    <svg
-                      className="animate-spin h-6 w-6 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  ) : (
-                    <ArrowLeftIcon className="w-6 h-6 text-white" />
-                  )}
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  New Transaction
-                </h3>
-                <p className="text-sm text-gray-600 text-center mb-4">
-                  Start a new sale transaction
-                </p>
-                <div className="w-full">
-                  {navigating ? (
-                    <div className="flex items-center justify-center text-indigo-600 font-medium">
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-600"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Starting...
-                    </div>
-                  ) : (
-                    <div className="text-indigo-600 font-medium text-center">
-                      Click to Start
-                    </div>
-                  )}
-                </div>
-              </button>
-            </div>
           </div>
         </div>
       </div>

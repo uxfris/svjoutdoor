@@ -30,6 +30,10 @@ export interface PrintReceiptData {
     nama_perusahaan: string;
     alamat: string;
     telepon: string;
+    receipt_width_mm?: number;
+    receipt_font_size?: number;
+    receipt_paper_type?: string;
+    receipt_footer?: string;
   };
 }
 
@@ -235,6 +239,15 @@ export class PrintService {
     const formatCurrency = (amount: number) => `Rp ${amount.toLocaleString()}`;
     const formatDate = (date: string) => new Date(date).toLocaleDateString();
 
+    // Get receipt configuration from settings with defaults
+    const receiptWidth = data.setting.receipt_width_mm || 75;
+    const fontSize = data.setting.receipt_font_size || 12;
+    const paperType = data.setting.receipt_paper_type || "thermal_75mm";
+    const footer = data.setting.receipt_footer || "";
+
+    // Calculate body width (slightly smaller than receipt width for margins)
+    const bodyWidth = Math.max(receiptWidth - 10, 50); // Minimum 50mm body width
+
     return `
       <!DOCTYPE html>
       <html>
@@ -242,15 +255,15 @@ export class PrintService {
         <meta charset="UTF-8">
         <title>Receipt</title>
         <style>
-          * { font-family: "Consolas", monospace; }
-          body { width: 75mm; margin: 0; padding: 5px; }
+          * { font-family: "Consolas", monospace; font-size: ${fontSize}px; }
+          body { width: ${bodyWidth}mm; margin: 0; padding: 5px; }
           .center { text-align: center; }
           .right { text-align: right; }
           .bold { font-weight: bold; }
           .separator { border-top: 1px dashed #000; margin: 5px 0; }
           @media print {
-            @page { margin: 0; size: 75mm auto; }
-            body { width: 70mm; }
+            @page { margin: 0; size: ${receiptWidth}mm auto; }
+            body { width: ${bodyWidth}mm; }
             .no-print { display: none; }
           }
         </style>
@@ -374,6 +387,14 @@ export class PrintService {
         <div class="separator"></div>
         <div class="center">
           <p><strong>-- TERIMA KASIH --</strong></p>
+          ${
+            footer
+              ? `<p style="margin: 5px 0; font-size: ${Math.max(
+                  fontSize - 2,
+                  8
+                )}px;">${footer}</p>`
+              : ""
+          }
         </div>
       </body>
       </html>

@@ -103,10 +103,18 @@ export default function DashboardPage() {
     nama_perusahaan: string;
     alamat: string;
     telepon: string;
+    receipt_width_mm?: number;
+    receipt_font_size?: number;
+    receipt_paper_type?: string;
+    receipt_footer?: string;
   }>({
     nama_perusahaan: "SVJ OUTDOOR",
     alamat: "",
     telepon: "",
+    receipt_width_mm: 75,
+    receipt_font_size: 12,
+    receipt_paper_type: "thermal_75mm",
+    receipt_footer: "",
   });
 
   // Cache hooks
@@ -542,8 +550,10 @@ export default function DashboardPage() {
             .select("id_kategori, nama_kategori")
             .order("nama_kategori"),
           supabase
-            .from("settings")
-            .select("nama_perusahaan, alamat, telepon")
+            .from("setting")
+            .select(
+              "nama_perusahaan, alamat, telepon, receipt_width_mm, receipt_font_size, receipt_paper_type, receipt_footer"
+            )
             .single(),
         ]);
 
@@ -557,6 +567,11 @@ export default function DashboardPage() {
           nama_perusahaan: settingsData.data.nama_perusahaan || "SVJ OUTDOOR",
           alamat: settingsData.data.alamat || "",
           telepon: settingsData.data.telepon || "",
+          receipt_width_mm: settingsData.data.receipt_width_mm || 75,
+          receipt_font_size: settingsData.data.receipt_font_size || 12,
+          receipt_paper_type:
+            settingsData.data.receipt_paper_type || "thermal_75mm",
+          receipt_footer: settingsData.data.receipt_footer || "",
         });
       }
 
