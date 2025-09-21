@@ -6,6 +6,7 @@ import {
   FunnelIcon,
   XMarkIcon,
   ChartBarIcon,
+  PrinterIcon,
 } from "@heroicons/react/24/outline";
 import { RecentSale } from "@/lib/database.types";
 
@@ -28,7 +29,9 @@ interface RecentSalesTableProps {
   setShowFilters: (show: boolean) => void;
   onClearFilters: () => void;
   onSaleClick: (saleId: number) => void;
+  onPrintReceipt: (saleId: number) => void;
   loadingSaleId: number | null;
+  printingSaleId: number | null;
   isAdmin: boolean;
 }
 
@@ -51,7 +54,9 @@ export const RecentSalesTable = memo(function RecentSalesTable({
   setShowFilters,
   onClearFilters,
   onSaleClick,
+  onPrintReceipt,
   loadingSaleId,
+  printingSaleId,
   isAdmin,
 }: RecentSalesTableProps) {
   const hasActiveFilters = useMemo(
@@ -312,6 +317,9 @@ export const RecentSalesTable = memo(function RecentSalesTable({
               <th className="px-8 py-4 text-left text-xs font-semibold text-[var(--framer-color-text-secondary)] uppercase tracking-wider">
                 Date
               </th>
+              <th className="px-8 py-4 text-left text-xs font-semibold text-[var(--framer-color-text-secondary)] uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-[var(--framer-color-bg)] divide-y divide-[var(--framer-color-border)]">
@@ -373,6 +381,30 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                     day: "numeric",
                     year: "numeric",
                   })}
+                </td>
+                <td className="px-8 py-4 whitespace-nowrap">
+                  <button
+                    onClick={() => onPrintReceipt(sale.id_penjualan)}
+                    disabled={printingSaleId === sale.id_penjualan}
+                    className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      printingSaleId === sale.id_penjualan
+                        ? "bg-[var(--framer-color-border)] text-[var(--framer-color-text-secondary)] cursor-not-allowed"
+                        : "bg-[var(--framer-color-tint-disabled)] text-[var(--framer-color-tint)] hover:bg-[var(--framer-color-tint)] hover:text-white cursor-pointer"
+                    }`}
+                    title="Print Receipt"
+                  >
+                    {printingSaleId === sale.id_penjualan ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b border-[var(--framer-color-text-secondary)] mr-2"></div>
+                        Printing...
+                      </>
+                    ) : (
+                      <>
+                        <PrinterIcon className="h-4 w-4 mr-2" />
+                        Print
+                      </>
+                    )}
+                  </button>
                 </td>
               </tr>
             ))}

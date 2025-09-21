@@ -7,6 +7,7 @@ import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
 import { SalesByCategory } from "@/components/dashboard/SalesByCategory";
 import { LazyWrapper } from "@/components/ui/LazyWrapper";
 import { RecentSale } from "@/lib/database.types";
+import { PrintService, PrintReceiptData } from "@/lib/print-service";
 import {
   TagIcon,
   CurrencyDollarIcon,
@@ -95,6 +96,18 @@ export default function DashboardPage() {
   const [selectedSale, setSelectedSale] = useState<SaleDetail | null>(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
   const [loadingSaleId, setLoadingSaleId] = useState<number | null>(null);
+
+  // Print states
+  const [printingSaleId, setPrintingSaleId] = useState<number | null>(null);
+  const [settings, setSettings] = useState<{
+    nama_perusahaan: string;
+    alamat: string;
+    telepon: string;
+  }>({
+    nama_perusahaan: "SVJ OUTDOOR",
+    alamat: "",
+    telepon: "",
+  });
 
   // Cache hooks
   const { fetchData: fetchDashboardStats } = useDataCache(
@@ -520,18 +533,32 @@ export default function DashboardPage() {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Fetch data using cache
-      const [statsData, usersData, categoriesData] = await Promise.all([
-        fetchDashboardStats(),
-        supabase.from("users").select("id, name, level").eq("level", 2), // Only get cashiers
-        supabase
-          .from("kategori")
-          .select("id_kategori, nama_kategori")
-          .order("nama_kategori"),
-      ]);
+      const [statsData, usersData, categoriesData, settingsData] =
+        await Promise.all([
+          fetchDashboardStats(),
+          supabase.from("users").select("id, name, level").eq("level", 2), // Only get cashiers
+          supabase
+            .from("kategori")
+            .select("id_kategori, nama_kategori")
+            .order("nama_kategori"),
+          supabase
+            .from("settings")
+            .select("nama_perusahaan, alamat, telepon")
+            .single(),
+        ]);
 
       setStats(statsData);
       setAllUsers(usersData.data || []);
       setAllCategories(categoriesData.data || []);
+
+      // Update settings if available
+      if (settingsData.data) {
+        setSettings({
+          nama_perusahaan: settingsData.data.nama_perusahaan || "SVJ OUTDOOR",
+          alamat: settingsData.data.alamat || "",
+          telepon: settingsData.data.telepon || "",
+        });
+      }
 
       // Fetch recent sales after user and admin status are set
       const recentSalesData = await fetchRecentSales();
@@ -669,6 +696,114 @@ export default function DashboardPage() {
     setDrawerLoading(false);
     setLoadingSaleId(null);
   }, []);
+
+  const handlePrintReceipt = useCallback(
+    async (saleId: number) => {
+      setPrintingSaleId(saleId);
+      try {
+        const supabase = createClient();
+
+        // Get sale data
+        const { data: sale, error: saleError } = await supabase
+          .from("penjualan")
+          .select(
+            `
+          id_penjualan,
+          total_item,
+          total_harga,
+          diskon,
+          discount_type,
+          bayar,
+          diterima,
+          created_at,
+          id_member,
+          id_user
+        `
+          )
+          .eq("id_penjualan", saleId)
+          .single();
+
+        if (saleError) {
+          console.error("Error fetching sale:", saleError);
+          return;
+        }
+
+        // Get member data if exists
+        let memberData = null;
+        if (sale.id_member) {
+          const { data: member } = await supabase
+            .from("member")
+            .select("nama, kode_member")
+            .eq("id_member", sale.id_member)
+            .single();
+          memberData = member;
+        }
+
+        // Get user data
+        const { data: userData } = await supabase
+          .from("users")
+          .select("name")
+          .eq("id", sale.id_user)
+          .single();
+
+        // Get sale details (items)
+        const { data: items, error: itemsError } = await supabase
+          .from("penjualan_detail")
+          .select(
+            `
+          id_kategori,
+          harga_jual,
+          jumlah,
+          diskon,
+          discount_type,
+          subtotal,
+          kategori(nama_kategori)
+        `
+          )
+          .eq("id_penjualan", saleId);
+
+        if (itemsError) {
+          console.error("Error fetching sale items:", itemsError);
+          return;
+        }
+
+        // Format items data
+        const formattedItems =
+          items?.map((item: any) => ({
+            nama_kategori: item.kategori?.nama_kategori || "Unknown Category",
+            harga_jual: item.harga_jual,
+            jumlah: item.jumlah,
+            diskon: item.diskon,
+            discount_type: item.discount_type,
+            subtotal: item.subtotal,
+          })) || [];
+
+        // Prepare print data
+        const printData: PrintReceiptData = {
+          id_penjualan: sale.id_penjualan,
+          total_item: sale.total_item,
+          total_harga: sale.total_harga,
+          diskon: sale.diskon,
+          discount_type: sale.discount_type,
+          bayar: sale.bayar,
+          diterima: sale.diterima,
+          created_at: sale.created_at,
+          member: memberData || undefined,
+          user: userData || undefined,
+          items: formattedItems,
+          setting: settings,
+        };
+
+        // Print the receipt
+        await PrintService.printSmallReceipt(printData);
+      } catch (error) {
+        console.error("Error printing receipt:", error);
+      } finally {
+        setPrintingSaleId(null);
+      }
+    },
+    [settings]
+  );
 
   const statsArray = useMemo(() => {
     if (isAdmin) {
@@ -1088,7 +1223,9 @@ export default function DashboardPage() {
         setShowFilters={setShowFilters}
         onClearFilters={clearFilters}
         onSaleClick={fetchSaleDetails}
+        onPrintReceipt={handlePrintReceipt}
         loadingSaleId={loadingSaleId}
+        printingSaleId={printingSaleId}
         isAdmin={isAdmin}
       />
 
