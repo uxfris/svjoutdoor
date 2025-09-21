@@ -89,12 +89,12 @@ export function SalesByCategory({
   }, [categoryData]);
 
   const timeFilterOptions = [
-    { value: "today", label: "Today" },
-    { value: "yesterday", label: "Yesterday" },
-    { value: "week", label: "This Week" },
-    { value: "month", label: "This Month" },
-    { value: "year", label: "This Year" },
-    { value: "all", label: "All Time" },
+    { value: "today", label: "Hari Ini" },
+    { value: "yesterday", label: "Kemarin" },
+    { value: "week", label: "Minggu Ini" },
+    { value: "month", label: "Bulan Ini" },
+    { value: "year", label: "Tahun Ini" },
+    { value: "all", label: "Semua Waktu" },
   ];
 
   if (loading) {
@@ -118,12 +118,12 @@ export function SalesByCategory({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">
-            Sales by Category
+            Penjualan per Kategori
           </h3>
           <p className="text-sm text-gray-600">
             {isAdmin
-              ? "Revenue breakdown by product category"
-              : "Your sales performance by category"}
+              ? "Rincian pendapatan per kategori produk"
+              : "Performa penjualan Anda per kategori"}
           </p>
         </div>
         <div className="relative">
@@ -162,7 +162,9 @@ export function SalesByCategory({
           <div className="flex items-center">
             <CurrencyDollarIcon className="w-8 h-8 text-blue-600 mr-3" />
             <div>
-              <p className="text-sm font-medium text-blue-600">Total Revenue</p>
+              <p className="text-sm font-medium text-blue-600">
+                Total Pendapatan
+              </p>
               <p className="text-2xl font-bold text-blue-900">
                 Rp {totalRevenue.toLocaleString()}
               </p>
@@ -173,7 +175,9 @@ export function SalesByCategory({
           <div className="flex items-center">
             <ChartBarIcon className="w-8 h-8 text-green-600 mr-3" />
             <div>
-              <p className="text-sm font-medium text-green-600">Total Sales</p>
+              <p className="text-sm font-medium text-green-600">
+                Total Penjualan
+              </p>
               <p className="text-2xl font-bold text-green-900">{totalSales}</p>
             </div>
           </div>
@@ -183,7 +187,7 @@ export function SalesByCategory({
             <ShoppingBagIcon className="w-8 h-8 text-purple-600 mr-3" />
             <div>
               <p className="text-sm font-medium text-purple-600">
-                Total Quantity
+                Total Kuantitas
               </p>
               <p className="text-2xl font-bold text-purple-900">
                 {totalQuantity}
@@ -219,8 +223,8 @@ export function SalesByCategory({
                         {category.nama_kategori}
                       </h4>
                       <p className="text-sm text-gray-500">
-                        {category.total_sales} sales • {category.total_quantity}{" "}
-                        items
+                        {category.total_sales} penjualan •{" "}
+                        {category.total_quantity} item
                       </p>
                     </div>
                   </div>
@@ -229,7 +233,7 @@ export function SalesByCategory({
                       Rp {category.total_revenue.toLocaleString()}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {percentage.toFixed(1)}% of total
+                      {percentage.toFixed(1)}% dari total
                     </p>
                   </div>
                 </div>
@@ -250,10 +254,10 @@ export function SalesByCategory({
               <ChartBarIcon className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No sales data available
+              Tidak ada data penjualan tersedia
             </h3>
             <p className="text-gray-600">
-              No sales found for the selected time period
+              Tidak ada penjualan ditemukan untuk periode waktu yang dipilih
             </p>
           </div>
         )}

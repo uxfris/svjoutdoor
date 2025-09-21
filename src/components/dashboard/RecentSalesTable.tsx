@@ -82,15 +82,15 @@ export const RecentSalesTable = memo(function RecentSalesTable({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-[var(--framer-color-text)]">
-              Recent Sales
+              Penjualan Terbaru
             </h2>
             <p className="text-sm text-[var(--framer-color-text-secondary)] mt-1">
-              Latest transactions from your store
+              Transaksi terbaru dari toko Anda
             </p>
           </div>
           <div className="flex items-center space-x-2 text-sm text-[var(--framer-color-text-tertiary)]">
             <span className="w-2 h-2 bg-[var(--framer-color-success)] rounded-full animate-pulse"></span>
-            <span>Live updates</span>
+            <span>Update langsung</span>
           </div>
         </div>
       </div>
@@ -104,7 +104,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[var(--framer-color-text-tertiary)]" />
               <input
                 type="text"
-                placeholder="Search by sale ID, cashier, or amount..."
+                placeholder="Cari berdasarkan ID penjualan, kasir, atau jumlah..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)]"
@@ -118,7 +118,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
             className="flex items-center gap-2 px-4 py-2 border border-[var(--framer-color-border)] rounded-lg hover:bg-[var(--framer-color-surface)] transition-colors text-[var(--framer-color-text)]"
           >
             <FunnelIcon className="h-5 w-5" />
-            Filters
+            Filter
           </button>
 
           {/* Clear Filters */}
@@ -128,7 +128,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
               className="flex items-center gap-2 px-4 py-2 text-[var(--framer-color-text-secondary)] hover:text-[var(--framer-color-text)] transition-colors"
             >
               <XMarkIcon className="h-5 w-5" />
-              Clear
+              Hapus
             </button>
           )}
         </div>
@@ -145,7 +145,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
               {isAdmin && (
                 <div>
                   <label className="block text-sm font-medium text-[var(--framer-color-text-secondary)] mb-2">
-                    Cashier
+                    Kasir
                   </label>
                   <div className="relative">
                     <select
@@ -153,7 +153,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                       onChange={(e) => setCashierFilter(e.target.value)}
                       className="w-full px-3 py-2 pr-10 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)] appearance-none"
                     >
-                      <option value="all">All Cashiers</option>
+                      <option value="all">Semua Kasir</option>
                       {allUsers.map((user) => (
                         <option key={user.id} value={user.id}>
                           {user.name}
@@ -182,7 +182,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
               {/* Date Filter */}
               <div>
                 <label className="block text-sm font-medium text-[var(--framer-color-text-secondary)] mb-2">
-                  Date Range
+                  Rentang Tanggal
                 </label>
                 <div className="relative">
                   <select
@@ -190,11 +190,11 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                     onChange={(e) => setDateFilter(e.target.value)}
                     className="w-full px-3 py-2 pr-10 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)] appearance-none"
                   >
-                    <option value="all">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="yesterday">Yesterday</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
+                    <option value="all">Semua Waktu</option>
+                    <option value="today">Hari Ini</option>
+                    <option value="yesterday">Kemarin</option>
+                    <option value="week">Minggu Ini</option>
+                    <option value="month">Bulan Ini</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <svg
@@ -217,7 +217,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
               {/* Amount Filter */}
               <div>
                 <label className="block text-sm font-medium text-[var(--framer-color-text-secondary)] mb-2">
-                  Amount Range
+                  Rentang Jumlah
                 </label>
                 <div className="relative">
                   <select
@@ -225,10 +225,10 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                     onChange={(e) => setAmountFilter(e.target.value)}
                     className="w-full px-3 py-2 pr-10 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)] appearance-none"
                   >
-                    <option value="all">All Amounts</option>
-                    <option value="low">Low (&lt; 100k)</option>
-                    <option value="medium">Medium (100k - 500k)</option>
-                    <option value="high">High (&gt; 500k)</option>
+                    <option value="all">Semua Jumlah</option>
+                    <option value="low">Rendah (&lt; 100k)</option>
+                    <option value="medium">Sedang (100k - 500k)</option>
+                    <option value="high">Tinggi (&gt; 500k)</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <svg
@@ -251,7 +251,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
               {/* Category Filter */}
               <div>
                 <label className="block text-sm font-medium text-[var(--framer-color-text-secondary)] mb-2">
-                  Category
+                  Kategori
                 </label>
                 <div className="relative">
                   <select
@@ -259,7 +259,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                     onChange={(e) => setCategoryFilter(e.target.value)}
                     className="w-full px-3 py-2 pr-10 border border-[var(--framer-color-border)] rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent bg-[var(--framer-color-bg)] text-[var(--framer-color-text)] appearance-none"
                   >
-                    <option value="all">All Categories</option>
+                    <option value="all">Semua Kategori</option>
                     {allCategories.map((category) => (
                       <option
                         key={category.id_kategori}
@@ -294,7 +294,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
       {/* Results Summary */}
       <div className="px-8 py-3 bg-[var(--framer-color-surface)] border-b border-[var(--framer-color-border)]">
         <div className="text-sm text-[var(--framer-color-text-secondary)]">
-          Showing {filteredSales.length} of {recentSales.length} sales
+          Menampilkan {filteredSales.length} dari {recentSales.length} penjualan
         </div>
       </div>
 
@@ -303,22 +303,22 @@ export const RecentSalesTable = memo(function RecentSalesTable({
           <thead className="bg-[var(--framer-color-surface)]">
             <tr>
               <th className="px-8 py-4 text-left text-xs font-semibold text-[var(--framer-color-text-secondary)] uppercase tracking-wider">
-                Sale ID
+                ID Penjualan
               </th>
               <th className="px-8 py-4 text-left text-xs font-semibold text-[var(--framer-color-text-secondary)] uppercase tracking-wider">
-                Cashier
+                Kasir
               </th>
               <th className="px-8 py-4 text-left text-xs font-semibold text-[var(--framer-color-text-secondary)] uppercase tracking-wider">
-                Items
+                Item
               </th>
               <th className="px-8 py-4 text-left text-xs font-semibold text-[var(--framer-color-text-secondary)] uppercase tracking-wider">
-                Amount
+                Jumlah
               </th>
               <th className="px-8 py-4 text-left text-xs font-semibold text-[var(--framer-color-text-secondary)] uppercase tracking-wider">
-                Date
+                Tanggal
               </th>
               <th className="px-8 py-4 text-left text-xs font-semibold text-[var(--framer-color-text-secondary)] uppercase tracking-wider">
-                Actions
+                Aksi
               </th>
             </tr>
           </thead>
@@ -346,7 +346,9 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                     </div>
                     <span className="text-sm font-medium text-[var(--framer-color-text)]">
                       {sale.users?.name ||
-                        (sale.id_user ? "User Not Found" : "No Cashier")}
+                        (sale.id_user
+                          ? "Pengguna Tidak Ditemukan"
+                          : "Tidak Ada Kasir")}
                     </span>
                   </div>
                 </td>

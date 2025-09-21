@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
       return NextResponse.json(
         {
-          error: `Invalid payment method: ${paymentMethod}. Must be 'cash' or 'debit'`,
+          error: `Metode pembayaran tidak valid: ${paymentMethod}. Harus 'cash' atau 'debit'`,
         },
         { status: 400 }
       );
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
     if (!user) {
       console.log("Sales API - No user found");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Tidak diizinkan" }, { status: 401 });
     }
 
     console.log("Sales API - User:", user.id);

@@ -28,11 +28,12 @@ export default function SignupPage() {
                 <h1 className="text-3xl font-bold text-white">SVJ Outdoor</h1>
               </div>
               <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
-                Start your outdoor business journey
+                Mulai perjalanan bisnis outdoor Anda
               </h2>
               <p className="text-xl text-white/90 leading-relaxed">
-                Join thousands of outdoor retailers who trust our platform to
-                manage their inventory, process sales, and grow their business.
+                Bergabunglah dengan ribuan pengecer outdoor yang mempercayai
+                platform kami untuk mengelola inventori, memproses penjualan,
+                dan mengembangkan bisnis mereka.
               </p>
               <div className="mt-12 space-y-4">
                 <div className="flex items-center text-white/80">

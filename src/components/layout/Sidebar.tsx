@@ -23,17 +23,17 @@ import { useLoading } from "./LoadingContext";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, level: [1, 2] },
-  { name: "Categories", href: "/categories", icon: TagIcon, level: [1] },
-  { name: "Reports", href: "/reports", icon: DocumentChartBarIcon, level: [1] },
-  { name: "Members", href: "/members", icon: UserGroupIcon, level: [1] },
-  { name: "Suppliers", href: "/suppliers", icon: TruckIcon, level: [1] },
-  { name: "Sales", href: "/sales", icon: ShoppingCartIcon, level: [1] },
-  { name: "New Sale", href: "/pos", icon: ShoppingCartIcon, level: [1, 2] },
-  { name: "Purchases", href: "/purchases", icon: TruckIcon, level: [1] },
-  { name: "Expenses", href: "/expenses", icon: ChartBarIcon, level: [1] },
-  { name: "Users", href: "/users", icon: UserIcon, level: [1] },
-  { name: "Settings", href: "/settings", icon: CogIcon, level: [1] },
-  { name: "Profile", href: "/profile", icon: UserIcon, level: [1, 2] },
+  { name: "Kategori", href: "/categories", icon: TagIcon, level: [1] },
+  { name: "Laporan", href: "/reports", icon: DocumentChartBarIcon, level: [1] },
+  { name: "Member", href: "/members", icon: UserGroupIcon, level: [1] },
+  { name: "Supplier", href: "/suppliers", icon: TruckIcon, level: [1] },
+  { name: "Penjualan", href: "/sales", icon: ShoppingCartIcon, level: [1] },
+  { name: "Kasir", href: "/pos", icon: ShoppingCartIcon, level: [1, 2] },
+  { name: "Pembelian", href: "/purchases", icon: TruckIcon, level: [1] },
+  { name: "Pengeluaran", href: "/expenses", icon: ChartBarIcon, level: [1] },
+  { name: "Pengguna", href: "/users", icon: UserIcon, level: [1] },
+  { name: "Pengaturan", href: "/settings", icon: CogIcon, level: [1] },
+  { name: "Profil", href: "/profile", icon: UserIcon, level: [1, 2] },
 ];
 
 interface SidebarProps {
@@ -115,7 +115,7 @@ const Sidebar = memo(function Sidebar({ userLevel }: SidebarProps) {
               <h1 className="text-xl font-semibold text-[var(--framer-color-tint-text)]">
                 SVJ Outdoor
               </h1>
-              <p className="text-xs text-white/80">Point of Sales</p>
+              <p className="text-xs text-white/80">Sistem Kasir</p>
             </div>
           </div>
         </div>
@@ -156,7 +156,7 @@ const Sidebar = memo(function Sidebar({ userLevel }: SidebarProps) {
             className="group flex items-center w-full px-4 py-3 text-sm font-medium text-[var(--framer-color-text-secondary)] rounded-[var(--framer-radius-md)] hover:bg-[var(--framer-color-error-bg)] hover:text-[var(--framer-color-error)] transition-all duration-150"
           >
             <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3 text-[var(--framer-color-text-tertiary)] group-hover:text-[var(--framer-color-error)]" />
-            Sign out
+            Keluar
           </button>
         </div>
       </div>

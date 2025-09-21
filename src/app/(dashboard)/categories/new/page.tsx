@@ -57,11 +57,13 @@ export default function NewCategoryPage() {
           className="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-4"
         >
           <ArrowLeftIcon className="w-4 h-4 mr-2" />
-          Back to Categories
+          Kembali ke Kategori
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Add New Category</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Tambah Kategori Baru
+        </h1>
         <p className="text-gray-600">
-          Create a new category with pricing and stock
+          Buat kategori baru dengan harga dan stok
         </p>
       </div>
 
@@ -69,7 +71,7 @@ export default function NewCategoryPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category Name *
+              Nama Kategori *
             </label>
             <input
               type="text"
@@ -78,13 +80,13 @@ export default function NewCategoryPage() {
               value={formData.nama_kategori}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base"
-              placeholder="Enter category name"
+              placeholder="Masukkan nama kategori"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Selling Price *
+              Harga Jual *
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -105,7 +107,7 @@ export default function NewCategoryPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Stock Quantity *
+              Jumlah Stok *
             </label>
             <input
               type="number"
@@ -121,7 +123,7 @@ export default function NewCategoryPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category Code *
+              Kode Kategori *
             </label>
             <input
               type="text"
@@ -130,7 +132,7 @@ export default function NewCategoryPage() {
               value={formData.kode_kategori}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base"
-              placeholder="Enter category code (e.g., CAT001)"
+              placeholder="Masukkan kode kategori (contoh: CAT001)"
             />
           </div>
 
@@ -141,7 +143,7 @@ export default function NewCategoryPage() {
               href="/categories"
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              Batal
             </Link>
             <button
               type="submit"
@@ -170,10 +172,10 @@ export default function NewCategoryPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Creating...
+                  Membuat...
                 </>
               ) : (
-                "Create Category"
+                "Buat Kategori"
               )}
             </button>
           </div>

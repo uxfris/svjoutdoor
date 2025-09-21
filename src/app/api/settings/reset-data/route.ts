@@ -92,19 +92,19 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: "All data has been successfully reset. Admin user preserved.",
+        message: "Semua data berhasil direset. Pengguna admin tetap tersimpan.",
       });
     } catch (dbError) {
       console.error("Database reset error:", dbError);
       return NextResponse.json(
-        { error: "Failed to reset data. Please try again." },
+        { error: "Gagal mereset data. Silakan coba lagi." },
         { status: 500 }
       );
     }
   } catch (error) {
     console.error("Reset data error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Kesalahan server internal" },
       { status: 500 }
     );
   }

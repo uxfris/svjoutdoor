@@ -144,7 +144,7 @@ export default function TransactionCompletePage() {
       <div className="p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Error Loading Transaction
+            Error Memuat Transaksi
           </h1>
           <p className="text-red-600 mb-6">{error}</p>
           <div className="space-x-4">
@@ -152,14 +152,14 @@ export default function TransactionCompletePage() {
               onClick={() => window.location.reload()}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
             >
-              Try Again
+              Coba Lagi
             </button>
             <button
               onClick={handleNewTransaction}
               disabled={navigating}
               className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {navigating ? "Loading..." : "Back to POS"}
+              {navigating ? "Memuat..." : "Kembali ke POS"}
             </button>
           </div>
         </div>
@@ -172,17 +172,17 @@ export default function TransactionCompletePage() {
       <div className="p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Transaction Not Found
+            Transaksi Tidak Ditemukan
           </h1>
           <p className="text-gray-600 mb-6">
-            The requested transaction could not be found.
+            Transaksi yang diminta tidak dapat ditemukan.
           </p>
           <button
             onClick={handleNewTransaction}
             disabled={navigating}
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {navigating ? "Loading..." : "Back to POS"}
+            {navigating ? "Memuat..." : "Kembali ke POS"}
           </button>
         </div>
       </div>
@@ -197,9 +197,9 @@ export default function TransactionCompletePage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Transaction Complete
+                Transaksi Selesai
               </h1>
-              <p className="text-gray-600">Receipt #{saleData.id_penjualan}</p>
+              <p className="text-gray-600">Struk #{saleData.id_penjualan}</p>
             </div>
             <button
               onClick={handleNewTransaction}
@@ -228,12 +228,12 @@ export default function TransactionCompletePage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Loading...
+                  Memuat...
                 </>
               ) : (
                 <>
                   <ArrowLeftIcon className="w-5 h-5 mr-2" />
-                  Back to POS
+                  Kembali ke POS
                 </>
               )}
             </button>
@@ -260,10 +260,10 @@ export default function TransactionCompletePage() {
             </div>
             <div className="ml-3">
               <h3 className="text-lg font-medium text-green-800">
-                Transaction Successful!
+                Transaksi Berhasil!
               </h3>
               <p className="text-green-700">
-                The sale has been processed and recorded successfully.
+                Penjualan telah diproses dan dicatat dengan berhasil.
               </p>
             </div>
           </div>
@@ -289,7 +289,7 @@ export default function TransactionCompletePage() {
                 </svg>
               </div>
               <h2 className="ml-3 text-lg font-semibold text-white">
-                Print Options
+                Opsi Cetak
               </h2>
             </div>
           </div>
@@ -305,10 +305,10 @@ export default function TransactionCompletePage() {
                   <PrinterIcon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Small Receipt
+                  Struk Kecil
                 </h3>
                 <p className="text-sm text-gray-600 text-center mb-4">
-                  Print a compact receipt for quick transactions
+                  Cetak struk kompak untuk transaksi cepat
                 </p>
                 <div className="w-full">
                   {printing ? (
@@ -333,11 +333,11 @@ export default function TransactionCompletePage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      Printing...
+                      Mencetak...
                     </div>
                   ) : (
                     <div className="text-blue-600 font-medium text-center">
-                      Click to Print
+                      Klik untuk Cetak
                     </div>
                   )}
                 </div>
@@ -353,10 +353,10 @@ export default function TransactionCompletePage() {
                   <DocumentArrowDownIcon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Large Receipt (PDF)
+                  Struk Besar (PDF)
                 </h3>
                 <p className="text-sm text-gray-600 text-center mb-4">
-                  Generate a detailed PDF receipt for records
+                  Buat struk PDF detail untuk arsip
                 </p>
                 <div className="w-full">
                   {printing ? (
@@ -381,11 +381,11 @@ export default function TransactionCompletePage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      Generating...
+                      Membuat...
                     </div>
                   ) : (
                     <div className="text-green-600 font-medium text-center">
-                      Click to Generate
+                      Klik untuk Buat
                     </div>
                   )}
                 </div>
@@ -424,10 +424,10 @@ export default function TransactionCompletePage() {
                   )}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  New Transaction
+                  Transaksi Baru
                 </h3>
                 <p className="text-sm text-gray-600 text-center mb-4">
-                  Start a new sale transaction
+                  Mulai transaksi penjualan baru
                 </p>
                 <div className="w-full">
                   {navigating ? (
@@ -452,11 +452,11 @@ export default function TransactionCompletePage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      Starting...
+                      Memulai...
                     </div>
                   ) : (
                     <div className="text-indigo-600 font-medium text-center">
-                      Click to Start
+                      Klik untuk Mulai
                     </div>
                   )}
                 </div>
@@ -485,7 +485,7 @@ export default function TransactionCompletePage() {
                 </svg>
               </div>
               <h2 className="ml-3 text-lg font-semibold text-white">
-                Transaction Details
+                Detail Transaksi
               </h2>
             </div>
           </div>
@@ -512,7 +512,7 @@ export default function TransactionCompletePage() {
                     </div>
                   </div>
                   <h3 className="ml-3 text-lg font-semibold text-gray-900">
-                    Transaction Information
+                    Informasi Transaksi
                   </h3>
                 </div>
 
@@ -532,9 +532,7 @@ export default function TransactionCompletePage() {
                           d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
                         />
                       </svg>
-                      <span className="text-gray-600 font-medium">
-                        Receipt #
-                      </span>
+                      <span className="text-gray-600 font-medium">Struk #</span>
                     </div>
                     <span className="font-bold text-gray-900 text-lg">
                       {saleData.id_penjualan}
@@ -557,7 +555,7 @@ export default function TransactionCompletePage() {
                         />
                       </svg>
                       <span className="text-gray-600 font-medium">
-                        Date & Time
+                        Tanggal & Waktu
                       </span>
                     </div>
                     <span className="font-medium text-gray-900">
@@ -580,10 +578,10 @@ export default function TransactionCompletePage() {
                           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                         />
                       </svg>
-                      <span className="text-gray-600 font-medium">Cashier</span>
+                      <span className="text-gray-600 font-medium">Kasir</span>
                     </div>
                     <span className="font-medium text-gray-900">
-                      {saleData.user?.name || "Unknown"}
+                      {saleData.user?.name || "Tidak Diketahui"}
                     </span>
                   </div>
 
@@ -641,7 +639,7 @@ export default function TransactionCompletePage() {
                     </div>
                   </div>
                   <h3 className="ml-3 text-lg font-semibold text-gray-900">
-                    Payment Summary
+                    Ringkasan Pembayaran
                   </h3>
                 </div>
 
@@ -662,7 +660,7 @@ export default function TransactionCompletePage() {
                         />
                       </svg>
                       <span className="text-gray-600 font-medium">
-                        Total Items
+                        Total Item
                       </span>
                     </div>
                     <span className="font-bold text-gray-900 text-lg">
@@ -710,9 +708,7 @@ export default function TransactionCompletePage() {
                             d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                           />
                         </svg>
-                        <span className="text-red-700 font-medium">
-                          Discount
-                        </span>
+                        <span className="text-red-700 font-medium">Diskon</span>
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-red-600 text-lg">
@@ -744,7 +740,7 @@ export default function TransactionCompletePage() {
                           />
                         </svg>
                         <span className="text-indigo-800 font-bold text-lg">
-                          Amount to Pay
+                          Jumlah yang Harus Dibayar
                         </span>
                       </div>
                       <span className="font-bold text-indigo-900 text-xl">
@@ -769,7 +765,7 @@ export default function TransactionCompletePage() {
                         />
                       </svg>
                       <span className="text-gray-600 font-medium">
-                        Payment Method
+                        Metode Pembayaran
                       </span>
                     </div>
                     <span
@@ -802,8 +798,8 @@ export default function TransactionCompletePage() {
                         )}
                       </svg>
                       {saleData.payment_method === "cash"
-                        ? "Cash"
-                        : "Debit Card"}
+                        ? "Tunai"
+                        : "Kartu Debit"}
                     </span>
                   </div>
 
@@ -825,7 +821,7 @@ export default function TransactionCompletePage() {
                             />
                           </svg>
                           <span className="text-gray-600 font-medium">
-                            Amount Received
+                            Jumlah Diterima
                           </span>
                         </div>
                         <span className="font-bold text-gray-900 text-lg">
@@ -848,7 +844,7 @@ export default function TransactionCompletePage() {
                             />
                           </svg>
                           <span className="text-green-800 font-bold text-lg">
-                            Change
+                            Kembalian
                           </span>
                         </div>
                         <span className="font-bold text-green-900 text-xl">
@@ -879,10 +875,10 @@ export default function TransactionCompletePage() {
                         </svg>
                         <div>
                           <div className="text-blue-800 font-semibold">
-                            Card Payment
+                            Pembayaran Kartu
                           </div>
                           <div className="text-sm text-blue-600">
-                            Customer will pay via debit card
+                            Pelanggan akan membayar dengan kartu debit
                           </div>
                         </div>
                       </div>
@@ -914,12 +910,11 @@ export default function TransactionCompletePage() {
                 </svg>
               </div>
               <h2 className="ml-3 text-lg font-semibold text-white">
-                Items Sold
+                Item Terjual
               </h2>
               <div className="ml-auto">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white bg-opacity-20 text-black">
                   {saleData.items.length} item
-                  {saleData.items.length !== 1 ? "s" : ""}
                 </span>
               </div>
             </div>
@@ -943,7 +938,7 @@ export default function TransactionCompletePage() {
                           d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
                         />
                       </svg>
-                      Category
+                      Kategori
                     </div>
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -961,7 +956,7 @@ export default function TransactionCompletePage() {
                           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                         />
                       </svg>
-                      Price
+                      Harga
                     </div>
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -979,7 +974,7 @@ export default function TransactionCompletePage() {
                           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                         />
                       </svg>
-                      Discount
+                      Diskon
                     </div>
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -997,7 +992,7 @@ export default function TransactionCompletePage() {
                           d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2M9 12l2 2 4-4"
                         />
                       </svg>
-                      Qty
+                      Jumlah
                     </div>
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -1106,7 +1101,7 @@ export default function TransactionCompletePage() {
                             </svg>
                           </div>
                           <span className="text-sm text-gray-400 font-medium">
-                            No discount
+                            Tidak ada diskon
                           </span>
                         </div>
                       )}
@@ -1119,7 +1114,7 @@ export default function TransactionCompletePage() {
                           </span>
                         </div>
                         <span className="text-sm font-medium text-gray-900">
-                          {item.jumlah === 1 ? "item" : "items"}
+                          item
                         </span>
                       </div>
                     </td>

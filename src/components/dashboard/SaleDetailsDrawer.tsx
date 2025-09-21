@@ -60,16 +60,16 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
               <h2 className="text-xl font-bold text-[var(--framer-color-text)]">
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
-                    <span>Loading Sale Details</span>
+                    <span>Memuat Detail Penjualan</span>
                     <div className="animate-pulse w-2 h-2 bg-[var(--framer-color-tint)] rounded-full"></div>
                   </div>
                 ) : (
-                  `Sale Details #${selectedSale?.id_penjualan}`
+                  `Detail Penjualan #${selectedSale?.id_penjualan}`
                 )}
               </h2>
               <p className="text-sm text-[var(--framer-color-text-secondary)]">
                 {isLoading
-                  ? "Please wait while we fetch the details..."
+                  ? "Mohon tunggu sambil kami mengambil detail..."
                   : selectedSale?.created_at
                   ? new Date(selectedSale.created_at).toLocaleDateString(
                       "en-US",
@@ -99,10 +99,10 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--framer-color-tint)]"></div>
                 <div className="text-center">
                   <p className="text-[var(--framer-color-text)] font-medium">
-                    Loading sale details...
+                    Memuat detail penjualan...
                   </p>
                   <p className="text-[var(--framer-color-text-secondary)] text-sm mt-1">
-                    Fetching categories and transaction information
+                    Mengambil informasi kategori dan transaksi
                   </p>
                 </div>
               </div>
@@ -112,7 +112,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-[var(--framer-color-text-secondary)]">
-                      Cashier
+                      Kasir
                     </label>
                     <p className="text-[var(--framer-color-text)] font-medium">
                       {selectedSale.users?.name || "Unknown"}
@@ -128,7 +128,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                   </div>
                   <div>
                     <label className="text-sm font-medium text-[var(--framer-color-text-secondary)]">
-                      Payment Method
+                      Metode Pembayaran
                     </label>
                     <p className="text-[var(--framer-color-text)] font-medium capitalize">
                       {selectedSale.payment_method}
@@ -136,7 +136,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                   </div>
                   <div>
                     <label className="text-sm font-medium text-[var(--framer-color-text-secondary)]">
-                      Total Items
+                      Total Item
                     </label>
                     <p className="text-[var(--framer-color-text)] font-medium">
                       {selectedSale.total_item}
@@ -147,7 +147,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                 {/* Items List */}
                 <div>
                   <h3 className="text-lg font-semibold text-[var(--framer-color-text)] mb-4">
-                    Items
+                    Item
                   </h3>
                   <div className="space-y-3">
                     {selectedSale.items.map((item, index) => (
@@ -161,13 +161,13 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                               {item.nama_kategori}
                             </h4>
                             <div className="flex items-center space-x-4 mt-2 text-sm text-[var(--framer-color-text-secondary)]">
-                              <span>Qty: {item.jumlah}</span>
+                              <span>Jml: {item.jumlah}</span>
                               <span>
-                                Price: Rp {item.harga_jual.toLocaleString()}
+                                Harga: Rp {item.harga_jual.toLocaleString()}
                               </span>
                               {item.diskon > 0 && (
                                 <span className="text-red-600">
-                                  Discount: -Rp{" "}
+                                  Diskon: -Rp{" "}
                                   {item.discount_type === "percentage"
                                     ? (
                                         (item.harga_jual * item.diskon) /
@@ -208,7 +208,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                     {selectedSale.diskon > 0 && (
                       <div className="flex justify-between">
                         <span className="text-[var(--framer-color-text-secondary)]">
-                          Discount:
+                          Diskon:
                         </span>
                         <span className="text-red-600">
                           - Rp{" "}
@@ -229,7 +229,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                     )}
                     <div className="flex justify-between">
                       <span className="text-[var(--framer-color-text-secondary)]">
-                        Amount Paid:
+                        Jumlah Dibayar:
                       </span>
                       <span className="text-[var(--framer-color-text)]">
                         Rp {selectedSale.bayar.toLocaleString()}
@@ -237,7 +237,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[var(--framer-color-text-secondary)]">
-                        Change:
+                        Kembalian:
                       </span>
                       <span className="text-[var(--framer-color-text)]">
                         Rp {selectedSale.diterima.toLocaleString()}
@@ -259,7 +259,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
             ) : (
               <div className="text-center py-12">
                 <p className="text-[var(--framer-color-text-secondary)]">
-                  No sale details found
+                  Tidak ada detail penjualan ditemukan
                 </p>
               </div>
             )}

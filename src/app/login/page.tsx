@@ -34,11 +34,11 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
                 <h1 className="text-3xl font-bold text-white">SVJ Outdoor</h1>
               </div>
               <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
-                Welcome back to your outdoor adventure hub
+                Selamat datang kembali ke pusat petualangan outdoor Anda
               </h2>
               <p className="text-xl text-white/90 leading-relaxed">
-                Manage your outdoor equipment inventory, track sales, and grow
-                your business with our comprehensive POS system.
+                Kelola inventori peralatan outdoor Anda, pantau penjualan, dan
+                kembangkan bisnis Anda dengan sistem kasir yang komprehensif.
               </p>
               <div className="mt-12 space-y-4">
                 <div className="flex items-center text-white/80">
@@ -55,7 +55,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <span>Complete inventory management</span>
+                  <span>Manajemen inventori lengkap</span>
                 </div>
                 <div className="flex items-center text-white/80">
                   <svg
@@ -71,7 +71,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <span>Real-time sales tracking</span>
+                  <span>Pelacakan penjualan real-time</span>
                 </div>
                 <div className="flex items-center text-white/80">
                   <svg
@@ -87,7 +87,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <span>Advanced analytics & reporting</span>
+                  <span>Analitik & laporan canggih</span>
                 </div>
               </div>
             </div>

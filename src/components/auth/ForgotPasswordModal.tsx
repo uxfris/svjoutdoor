@@ -35,19 +35,19 @@ export default function ForgotPasswordModal({
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
         console.error("Non-JSON response:", text);
-        throw new Error("Server error. Please try again later.");
+        throw new Error("Kesalahan server. Silakan coba lagi nanti.");
       }
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to send reset email");
+        throw new Error(data.error || "Gagal mengirim email reset");
       }
 
       setSuccess(true);
     } catch (error: any) {
       console.error("Forgot password error:", error);
-      setError(error.message || "An unexpected error occurred");
+      setError(error.message || "Terjadi kesalahan yang tidak terduga");
     } finally {
       setLoading(false);
     }
@@ -68,7 +68,7 @@ export default function ForgotPasswordModal({
         <div className="p-8">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold text-gray-900">
-              {success ? "Check your email" : "Reset your password"}
+              {success ? "Periksa email Anda" : "Reset kata sandi Anda"}
             </h3>
             <button
               onClick={handleClose}
@@ -108,30 +108,31 @@ export default function ForgotPasswordModal({
                 </svg>
               </div>
               <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                Reset link sent!
+                Tautan reset terkirim!
               </h4>
               <p className="text-gray-600 mb-4">
-                We&apos;ve sent a password reset link to{" "}
+                Kami telah mengirim tautan reset kata sandi ke{" "}
                 <span className="font-semibold text-gray-900">{email}</span>
               </p>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <p className="text-sm text-blue-800">
-                  <strong>Next steps:</strong> Check your email and click the
-                  link to reset your password. The link will expire in 1 hour.
+                  <strong>Langkah selanjutnya:</strong> Periksa email Anda dan
+                  klik tautan untuk mereset kata sandi Anda. Tautan akan
+                  kedaluwarsa dalam 1 jam.
                 </p>
               </div>
               <button
                 onClick={handleClose}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-[var(--framer-color-tint)] hover:bg-[var(--framer-color-tint-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--framer-color-tint)] transition-colors"
               >
-                Got it
+                Mengerti
               </button>
             </div>
           ) : (
             <div>
               <p className="text-gray-600 mb-6">
-                Enter your email address and we&apos;ll send you a link to reset
-                your password.
+                Masukkan alamat email Anda dan kami akan mengirim tautan untuk
+                mereset kata sandi Anda.
               </p>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
@@ -139,7 +140,7 @@ export default function ForgotPasswordModal({
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
-                    Email address
+                    Alamat email
                   </label>
                   <input
                     id="email"
@@ -148,7 +149,7 @@ export default function ForgotPasswordModal({
                     autoComplete="email"
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-[var(--framer-color-tint)] text-base"
-                    placeholder="Enter your email address"
+                    placeholder="Masukkan alamat email Anda"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -183,7 +184,7 @@ export default function ForgotPasswordModal({
                     onClick={handleClose}
                     className="flex-1 flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
                   >
-                    Cancel
+                    Batal
                   </button>
                   <button
                     type="submit"
@@ -212,10 +213,10 @@ export default function ForgotPasswordModal({
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           ></path>
                         </svg>
-                        Sending...
+                        Mengirim...
                       </>
                     ) : (
-                      "Send Reset Link"
+                      "Kirim Tautan Reset"
                     )}
                   </button>
                 </div>

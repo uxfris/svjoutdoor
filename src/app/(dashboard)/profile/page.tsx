@@ -53,10 +53,10 @@ export default function ProfilePage() {
           setUser(userData);
           setProfileForm({ name: userData.name });
         } else {
-          showToast("error", "Failed to load profile");
+          showToast("error", "Gagal memuat profil");
         }
       } catch (error) {
-        showToast("error", "Failed to load profile");
+        showToast("error", "Gagal memuat profil");
       } finally {
         setLoading(false);
       }
@@ -73,7 +73,7 @@ export default function ProfilePage() {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileForm.name.trim()) {
-      showToast("error", "Name is required");
+      showToast("error", "Nama wajib diisi");
       return;
     }
 
@@ -88,13 +88,13 @@ export default function ProfilePage() {
       if (response.ok) {
         const updatedUser = await response.json();
         setUser(updatedUser);
-        showToast("success", "Profile updated successfully");
+        showToast("success", "Profil berhasil diperbarui");
       } else {
         const error = await response.json();
-        showToast("error", error.error || "Failed to update profile");
+        showToast("error", error.error || "Gagal memperbarui profil");
       }
     } catch (error) {
-      showToast("error", "Failed to update profile");
+      showToast("error", "Gagal memperbarui profil");
     } finally {
       setProfileLoading(false);
     }
@@ -104,17 +104,17 @@ export default function ProfilePage() {
     e.preventDefault();
 
     if (!passwordForm.currentPassword || !passwordForm.newPassword) {
-      showToast("error", "All password fields are required");
+      showToast("error", "Semua field password wajib diisi");
       return;
     }
 
     if (passwordForm.newPassword.length < 6) {
-      showToast("error", "New password must be at least 6 characters long");
+      showToast("error", "Password baru minimal 6 karakter");
       return;
     }
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      showToast("error", "New passwords do not match");
+      showToast("error", "Password baru tidak cocok");
       return;
     }
 
@@ -130,7 +130,7 @@ export default function ProfilePage() {
       });
 
       if (response.ok) {
-        showToast("success", "Password changed successfully");
+        showToast("success", "Password berhasil diubah");
         setPasswordForm({
           currentPassword: "",
           newPassword: "",
@@ -138,10 +138,10 @@ export default function ProfilePage() {
         });
       } else {
         const error = await response.json();
-        showToast("error", error.error || "Failed to change password");
+        showToast("error", error.error || "Gagal mengubah password");
       }
     } catch (error) {
-      showToast("error", "Failed to change password");
+      showToast("error", "Gagal mengubah password");
     } finally {
       setPasswordLoading(false);
     }
@@ -150,7 +150,7 @@ export default function ProfilePage() {
   const handleAccountAction = async (action: string) => {
     if (action === "delete_account") {
       const confirmed = window.confirm(
-        "Are you sure you want to delete your account? This action cannot be undone."
+        "Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan."
       );
       if (!confirmed) return;
     }
@@ -165,18 +165,18 @@ export default function ProfilePage() {
 
       if (response.ok) {
         if (action === "delete_account") {
-          showToast("success", "Account deleted successfully");
+          showToast("success", "Akun berhasil dihapus");
           router.push("/login");
         } else {
-          showToast("success", "Signed out from all devices");
+          showToast("success", "Berhasil keluar dari semua perangkat");
           router.push("/login");
         }
       } else {
         const error = await response.json();
-        showToast("error", error.error || "Action failed");
+        showToast("error", error.error || "Aksi gagal");
       }
     } catch (error) {
-      showToast("error", "Action failed");
+      showToast("error", "Aksi gagal");
     } finally {
       setActionLoading(null);
     }
@@ -209,10 +209,10 @@ export default function ProfilePage() {
       <div className="p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Profile Not Found
+            Profil Tidak Ditemukan
           </h1>
           <p className="text-gray-600">
-            Unable to load your profile information.
+            Tidak dapat memuat informasi profil Anda.
           </p>
         </div>
       </div>
@@ -237,27 +237,27 @@ export default function ProfilePage() {
       )}
 
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-        <p className="text-gray-600">Manage your account settings</p>
+        <h1 className="text-3xl font-bold text-gray-900">Profil</h1>
+        <p className="text-gray-600">Kelola pengaturan akun Anda</p>
       </div>
 
       <div className="space-y-6">
         {/* Profile Information */}
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Profile Information
+            Informasi Profil
           </h2>
           <form onSubmit={handleProfileUpdate} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className={formLabelClass}>Full Name</label>
+                <label className={formLabelClass}>Nama Lengkap</label>
                 <Input
                   type="text"
                   value={profileForm.name}
                   onChange={(e) =>
                     setProfileForm({ ...profileForm, name: e.target.value })
                   }
-                  placeholder="Enter your full name"
+                  placeholder="Masukkan nama lengkap Anda"
                   required
                 />
               </div>
@@ -271,16 +271,16 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className={formLabelClass}>Role</label>
+                <label className={formLabelClass}>Peran</label>
                 <Input
                   type="text"
-                  value={user.level === 1 ? "Admin" : "Cashier"}
+                  value={user.level === 1 ? "Admin" : "Kasir"}
                   disabled
                   className="bg-gray-50 text-gray-500"
                 />
               </div>
               <div>
-                <label className={formLabelClass}>Member Since</label>
+                <label className={formLabelClass}>Bergabung Sejak</label>
                 <Input
                   type="text"
                   value={new Date(user.created_at).toLocaleDateString()}
@@ -296,7 +296,7 @@ export default function ProfilePage() {
                 loading={profileLoading}
                 disabled={profileLoading}
               >
-                Update Profile
+                Perbarui Profil
               </Button>
             </div>
           </form>
@@ -305,12 +305,12 @@ export default function ProfilePage() {
         {/* Change Password */}
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Change Password
+            Ubah Password
           </h2>
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className={formLabelClass}>Current Password</label>
+                <label className={formLabelClass}>Password Saat Ini</label>
                 <Input
                   type="password"
                   value={passwordForm.currentPassword}
@@ -320,12 +320,12 @@ export default function ProfilePage() {
                       currentPassword: e.target.value,
                     })
                   }
-                  placeholder="Enter current password"
+                  placeholder="Masukkan password saat ini"
                   required
                 />
               </div>
               <div>
-                <label className={formLabelClass}>New Password</label>
+                <label className={formLabelClass}>Password Baru</label>
                 <Input
                   type="password"
                   value={passwordForm.newPassword}
@@ -335,13 +335,15 @@ export default function ProfilePage() {
                       newPassword: e.target.value,
                     })
                   }
-                  placeholder="Enter new password"
+                  placeholder="Masukkan password baru"
                   required
                   minLength={6}
                 />
               </div>
               <div>
-                <label className={formLabelClass}>Confirm New Password</label>
+                <label className={formLabelClass}>
+                  Konfirmasi Password Baru
+                </label>
                 <Input
                   type="password"
                   value={passwordForm.confirmPassword}
@@ -351,7 +353,7 @@ export default function ProfilePage() {
                       confirmPassword: e.target.value,
                     })
                   }
-                  placeholder="Confirm new password"
+                  placeholder="Konfirmasi password baru"
                   required
                 />
               </div>
@@ -363,7 +365,7 @@ export default function ProfilePage() {
                 loading={passwordLoading}
                 disabled={passwordLoading}
               >
-                Change Password
+                Ubah Password
               </Button>
             </div>
           </form>
@@ -372,16 +374,17 @@ export default function ProfilePage() {
         {/* Account Actions */}
         <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Account Actions
+            Aksi Akun
           </h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div>
                 <h3 className="text-sm font-medium text-gray-900">
-                  Sign out from all devices
+                  Keluar dari semua perangkat
                 </h3>
                 <p className="text-sm text-gray-500">
-                  This will sign you out from all devices except this one
+                  Ini akan mengeluarkan Anda dari semua perangkat kecuali yang
+                  ini
                 </p>
               </div>
               <Button
@@ -390,16 +393,14 @@ export default function ProfilePage() {
                 loading={actionLoading === "signout_all"}
                 disabled={actionLoading === "signout_all"}
               >
-                Sign Out All
+                Keluar Semua
               </Button>
             </div>
             <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
               <div>
-                <h3 className="text-sm font-medium text-red-900">
-                  Delete Account
-                </h3>
+                <h3 className="text-sm font-medium text-red-900">Hapus Akun</h3>
                 <p className="text-sm text-red-500">
-                  This action cannot be undone
+                  Tindakan ini tidak dapat dibatalkan
                 </p>
               </div>
               <Button
@@ -408,7 +409,7 @@ export default function ProfilePage() {
                 loading={actionLoading === "delete_account"}
                 disabled={actionLoading === "delete_account"}
               >
-                Delete Account
+                Hapus Akun
               </Button>
             </div>
           </div>

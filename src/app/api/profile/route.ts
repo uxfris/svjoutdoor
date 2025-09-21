@@ -10,11 +10,14 @@ export async function GET() {
   } = await supabase.auth.getUser();
 
   if (authError) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Tidak diizinkan" }, { status: 401 });
   }
 
   if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Pengguna tidak ditemukan" },
+      { status: 404 }
+    );
   }
 
   // Get user data from the users table
@@ -47,11 +50,14 @@ export async function PUT(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (authError) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Tidak diizinkan" }, { status: 401 });
   }
 
   if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Pengguna tidak ditemukan" },
+      { status: 404 }
+    );
   }
 
   const body = await request.json();

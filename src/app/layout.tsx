@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SVJ Outdoor - Point of Sales",
-  description: "Modern point of sales system for outdoor equipment",
+  title: "SVJ Outdoor - Sistem Kasir",
+  description: "Sistem kasir modern untuk peralatan outdoor",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="id">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--framer-color-bg)]`}
       >

@@ -67,6 +67,9 @@ export default function DashboardPage() {
     todaySales: 0,
     todayRevenue: 0,
     myTotalSales: 0,
+    // Payment method breakdown for today's revenue
+    todayCash: 0,
+    todayDebit: 0,
   });
 
   // Cashier performance stats for admin
@@ -143,6 +146,8 @@ export default function DashboardPage() {
           todaySales: 0,
           todayRevenue: 0,
           myTotalSales: 0,
+          todayCash: 0,
+          todayDebit: 0,
         };
       } else {
         // Cashier stats - personal performance
@@ -162,7 +167,7 @@ export default function DashboardPage() {
               .select("*", { count: "exact", head: true }),
             supabase
               .from("penjualan")
-              .select("total_harga", { count: "exact" })
+              .select("total_harga, payment_method", { count: "exact" })
               .eq("id_user", user?.id)
               .gte("created_at", todayStart.toISOString())
               .lt("created_at", todayEnd.toISOString()),
@@ -178,6 +183,21 @@ export default function DashboardPage() {
             0
           ) || 0;
 
+        // Calculate payment method breakdown for today
+        const todayCash =
+          todaySalesResult.data?.reduce(
+            (sum, sale) =>
+              sum + (sale.payment_method === "cash" ? sale.total_harga : 0),
+            0
+          ) || 0;
+
+        const todayDebit =
+          todaySalesResult.data?.reduce(
+            (sum, sale) =>
+              sum + (sale.payment_method === "debit" ? sale.total_harga : 0),
+            0
+          ) || 0;
+
         return {
           totalCategories: categoriesResult.count || 0,
           totalSales: 0,
@@ -185,6 +205,8 @@ export default function DashboardPage() {
           todaySales: todaySalesResult.count || 0,
           todayRevenue,
           myTotalSales: mySalesResult.count || 0,
+          todayCash,
+          todayDebit,
         };
       }
     },
@@ -825,38 +847,51 @@ export default function DashboardPage() {
       // Admin dashboard - business overview (hiding member card)
       return [
         {
-          name: "Total Categories",
+          name: "Total Kategori",
           value: stats.totalCategories,
           icon: TagIcon,
-          color: "bg-[var(--framer-color-tint)]",
+          color: "bg-gradient-to-br from-indigo-500 to-indigo-600",
+          paymentBreakdown: undefined,
+          isFullWidth: false,
         },
         {
-          name: "Total Sales",
+          name: "Total Penjualan",
           value: stats.totalSales,
           icon: CurrencyDollarIcon,
-          color: "bg-[var(--framer-color-success)]",
+          color: "bg-gradient-to-br from-emerald-500 to-emerald-600",
+          paymentBreakdown: undefined,
+          isFullWidth: false,
         },
       ];
     } else {
       // Cashier dashboard - personal performance
       return [
         {
-          name: "Today's Sales",
-          value: stats.todaySales,
-          icon: CurrencyDollarIcon,
-          color: "bg-[var(--framer-color-success)]",
-        },
-        {
-          name: "Today's Revenue",
+          name: "Pendapatan Hari Ini",
           value: `Rp ${stats.todayRevenue.toLocaleString()}`,
           icon: CurrencyDollarIcon,
-          color: "bg-[var(--framer-color-tint)]",
+          color: "bg-gradient-to-br from-blue-500 to-blue-600",
+          paymentBreakdown: {
+            cash: stats.todayCash,
+            debit: stats.todayDebit,
+          },
+          isFullWidth: true,
         },
         {
-          name: "My Total Sales",
+          name: "Penjualan Hari Ini",
+          value: stats.todaySales,
+          icon: CurrencyDollarIcon,
+          color: "bg-gradient-to-br from-green-500 to-green-600",
+          paymentBreakdown: undefined,
+          isFullWidth: false,
+        },
+        {
+          name: "Total Penjualan Saya",
           value: stats.myTotalSales,
           icon: UserGroupIcon,
-          color: "bg-[var(--framer-color-tint)]",
+          color: "bg-gradient-to-br from-purple-500 to-purple-600",
+          paymentBreakdown: undefined,
+          isFullWidth: false,
         },
       ];
     }
@@ -873,7 +908,7 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return <div>Please log in to view the dashboard.</div>;
+    return <div>Silakan masuk untuk melihat dashboard.</div>;
   }
 
   return (
@@ -883,28 +918,63 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-slate-900 mb-2">
-              {isAdmin ? "Welcome back!" : "Good day!"}
+              {isAdmin ? "Selamat datang kembali!" : "Selamat siang!"}
             </h1>
             <p className="text-lg text-slate-600">
               {isAdmin
-                ? "Here's what's happening with your business today"
-                : "Here's your sales performance and recent transactions"}
+                ? "Inilah yang terjadi dengan bisnis Anda hari ini"
+                : "Inilah performa penjualan dan transaksi terbaru Anda"}
             </p>
           </div>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2">
-        {statsArray.map((stat) => (
-          <StatsCard
-            key={stat.name}
-            name={stat.name}
-            value={stat.value}
-            icon={stat.icon}
-            color={stat.color}
-          />
-        ))}
+      <div className="space-y-6 mb-8">
+        {isAdmin ? (
+          // Admin layout - 2 columns
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {statsArray.map((stat) => (
+              <StatsCard
+                key={stat.name}
+                name={stat.name}
+                value={stat.value}
+                icon={stat.icon}
+                color={stat.color}
+                paymentBreakdown={stat.paymentBreakdown}
+                isFullWidth={stat.isFullWidth}
+              />
+            ))}
+          </div>
+        ) : (
+          // Cashier layout - special arrangement
+          <>
+            {/* Full width Pendapatan Hari Ini card */}
+            <StatsCard
+              key={statsArray[0].name}
+              name={statsArray[0].name}
+              value={statsArray[0].value}
+              icon={statsArray[0].icon}
+              color={statsArray[0].color}
+              paymentBreakdown={statsArray[0].paymentBreakdown}
+              isFullWidth={statsArray[0].isFullWidth}
+            />
+            {/* Two column layout for other cards */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {statsArray.slice(1).map((stat) => (
+                <StatsCard
+                  key={stat.name}
+                  name={stat.name}
+                  value={stat.value}
+                  icon={stat.icon}
+                  color={stat.color}
+                  paymentBreakdown={stat.paymentBreakdown}
+                  isFullWidth={stat.isFullWidth}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Cashier Performance Section - Only for Admin */}
@@ -913,10 +983,10 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                Cashier Performance
+                Performa Kasir
               </h2>
               <p className="text-slate-600">
-                Sales and revenue performance by cashier
+                Performa penjualan dan pendapatan per kasir
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -1076,7 +1146,7 @@ export default function DashboardPage() {
                           {data.name}
                         </h3>
                         <p className="text-sm text-gray-500 font-medium">
-                          Cashier
+                          Kasir
                         </p>
                       </div>
                     </div>
@@ -1091,7 +1161,7 @@ export default function DashboardPage() {
                           <CurrencyDollarIcon className="w-4 h-4 text-green-600" />
                         </div>
                         <span className="text-sm font-semibold text-gray-700">
-                          Total Sales
+                          Total Penjualan
                         </span>
                       </div>
                       <span className="text-xl font-bold text-green-600">
@@ -1102,7 +1172,7 @@ export default function DashboardPage() {
                     {/* Payment Methods Section */}
                     <div className="space-y-3">
                       <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                        Payment Breakdown
+                        Rincian Pembayaran
                       </h4>
 
                       {/* Cash */}
@@ -1124,7 +1194,7 @@ export default function DashboardPage() {
                             </svg>
                           </div>
                           <span className="text-sm font-semibold text-gray-700">
-                            Cash
+                            Tunai
                           </span>
                         </div>
                         <span className="text-lg font-bold text-green-600">
@@ -1168,7 +1238,7 @@ export default function DashboardPage() {
                             <CurrencyDollarIcon className="w-4 h-4 text-blue-700" />
                           </div>
                           <span className="text-sm font-bold text-gray-800">
-                            Total Revenue
+                            Total Pendapatan
                           </span>
                         </div>
                         <span className="text-xl font-bold text-blue-700">
@@ -1188,10 +1258,11 @@ export default function DashboardPage() {
                 <UserGroupIcon className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No cashier data available
+                Tidak ada data kasir tersedia
               </h3>
               <p className="text-gray-600">
-                No sales data found for the selected time period
+                Tidak ada data penjualan ditemukan untuk periode waktu yang
+                dipilih
               </p>
             </div>
           )}
@@ -1210,12 +1281,12 @@ export default function DashboardPage() {
       {/* Recent Sales */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-slate-900 mb-4">
-          {isAdmin ? "Recent Sales" : "My Recent Sales"}
+          {isAdmin ? "Penjualan Terbaru" : "Penjualan Terbaru Saya"}
         </h2>
         <p className="text-slate-600 mb-4">
           {isAdmin
-            ? "Overview of all recent sales transactions"
-            : "Your recent sales transactions and performance"}
+            ? "Ringkasan semua transaksi penjualan terbaru"
+            : "Transaksi penjualan terbaru dan performa Anda"}
         </p>
       </div>
 

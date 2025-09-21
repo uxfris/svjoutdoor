@@ -53,10 +53,10 @@ const Header = memo(function Header({ user }: HeaderProps) {
           <div className="flex items-center space-x-4">
             <div>
               <h2 className="text-xl font-semibold text-[var(--framer-color-text)]">
-                Loading...
+                Memuat...
               </h2>
               <p className="text-sm text-[var(--framer-color-text-secondary)]">
-                Please wait
+                Mohon tunggu
               </p>
             </div>
           </div>
@@ -116,7 +116,7 @@ const Header = memo(function Header({ user }: HeaderProps) {
                     : "bg-[var(--framer-color-tint)]"
                 }`}
               ></span>
-              {user.level === 1 ? "Administrator" : "Cashier"}
+              {user.level === 1 ? "Administrator" : "Kasir"}
             </p>
           </div>
           <div className="w-10 h-10 bg-[var(--framer-color-tint)] rounded-full flex items-center justify-center">

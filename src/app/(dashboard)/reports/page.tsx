@@ -35,14 +35,14 @@ interface ReportCard {
 
 const reportCategories = [
   {
-    title: "Sales Reports",
-    description: "Analyze sales performance and trends",
+    title: "Laporan Penjualan",
+    description: "Analisis performa penjualan dan tren",
     reports: [
       {
         id: "sales-summary",
-        title: "Sales Summary",
+        title: "Ringkasan Penjualan",
         description:
-          "Overview of total sales, transactions, and performance metrics",
+          "Ringkasan total penjualan, transaksi, dan metrik performa",
         icon: ChartBarIcon,
         href: "/reports/sales-summary",
         color: "text-blue-600",
@@ -50,8 +50,8 @@ const reportCategories = [
       },
       {
         id: "sales-by-category",
-        title: "Sales by Category",
-        description: "Breakdown of sales performance by product categories",
+        title: "Penjualan per Kategori",
+        description: "Rincian performa penjualan per kategori produk",
         icon: ShoppingCartIcon,
         href: "/reports/sales-by-category",
         color: "text-green-600",
@@ -59,8 +59,8 @@ const reportCategories = [
       },
       {
         id: "daily-sales",
-        title: "Daily Sales Report",
-        description: "Daily sales trends and performance analysis",
+        title: "Laporan Penjualan Harian",
+        description: "Tren penjualan harian dan analisis performa",
         icon: CalendarIcon,
         href: "/reports/daily-sales",
         color: "text-purple-600",
@@ -68,8 +68,8 @@ const reportCategories = [
       },
       {
         id: "top-selling",
-        title: "Top Selling Items",
-        description: "Best performing products and categories",
+        title: "Produk Terlaris",
+        description: "Produk dan kategori dengan performa terbaik",
         icon: ArrowTrendingUpIcon,
         href: "/reports/top-selling",
         color: "text-orange-600",
@@ -78,13 +78,14 @@ const reportCategories = [
     ],
   },
   {
-    title: "Financial Reports",
-    description: "Track revenue, expenses, and profitability",
+    title: "Laporan Keuangan",
+    description: "Pantau pendapatan, pengeluaran, dan profitabilitas",
     reports: [
       {
         id: "profit-loss",
-        title: "Profit & Loss",
-        description: "Comprehensive P&L statement with revenue and expenses",
+        title: "Laba Rugi",
+        description:
+          "Laporan laba rugi komprehensif dengan pendapatan dan pengeluaran",
         icon: CurrencyDollarIcon,
         href: "/reports/profit-loss",
         color: "text-emerald-600",
@@ -92,8 +93,8 @@ const reportCategories = [
       },
       {
         id: "expense-analysis",
-        title: "Expense Analysis",
-        description: "Detailed breakdown of business expenses and costs",
+        title: "Analisis Pengeluaran",
+        description: "Rincian detail pengeluaran dan biaya bisnis",
         icon: DocumentTextIcon,
         href: "/reports/expense-analysis",
         color: "text-red-600",
@@ -101,8 +102,8 @@ const reportCategories = [
       },
       {
         id: "cash-flow",
-        title: "Cash Flow",
-        description: "Track money in and out of the business",
+        title: "Arus Kas",
+        description: "Pantau uang masuk dan keluar dari bisnis",
         icon: ArrowTrendingUpIcon,
         href: "/reports/cash-flow",
         color: "text-indigo-600",
@@ -111,13 +112,13 @@ const reportCategories = [
     ],
   },
   {
-    title: "Inventory Reports",
-    description: "Monitor stock levels and inventory management",
+    title: "Laporan Inventori",
+    description: "Pantau tingkat stok dan manajemen inventori",
     reports: [
       {
         id: "stock-levels",
-        title: "Stock Levels",
-        description: "Current inventory levels and stock status",
+        title: "Tingkat Stok",
+        description: "Tingkat inventori saat ini dan status stok",
         icon: TruckIcon,
         href: "/reports/stock-levels",
         color: "text-cyan-600",
@@ -125,8 +126,8 @@ const reportCategories = [
       },
       {
         id: "low-stock",
-        title: "Low Stock Alert",
-        description: "Items that need restocking or attention",
+        title: "Peringatan Stok Rendah",
+        description: "Item yang perlu diisi ulang atau mendapat perhatian",
         icon: ExclamationTriangleIcon,
         href: "/reports/low-stock",
         color: "text-yellow-600",
@@ -134,8 +135,8 @@ const reportCategories = [
       },
       {
         id: "purchase-analysis",
-        title: "Purchase Analysis",
-        description: "Analysis of purchasing patterns and supplier performance",
+        title: "Analisis Pembelian",
+        description: "Analisis pola pembelian dan performa supplier",
         icon: TruckIcon,
         href: "/reports/purchase-analysis",
         color: "text-teal-600",
@@ -144,13 +145,13 @@ const reportCategories = [
     ],
   },
   {
-    title: "Customer Reports",
-    description: "Customer insights and member analytics",
+    title: "Laporan Pelanggan",
+    description: "Wawasan pelanggan dan analitik member",
     reports: [
       {
         id: "customer-analysis",
-        title: "Customer Analysis",
-        description: "Customer behavior, preferences, and demographics",
+        title: "Analisis Pelanggan",
+        description: "Perilaku, preferensi, dan demografi pelanggan",
         icon: ChartBarIcon,
         href: "/reports/customer-analysis",
         color: "text-pink-600",
@@ -158,8 +159,8 @@ const reportCategories = [
       },
       {
         id: "member-performance",
-        title: "Member Performance",
-        description: "Member activity and contribution to sales",
+        title: "Performa Member",
+        description: "Aktivitas member dan kontribusi terhadap penjualan",
         icon: ArrowTrendingUpIcon,
         href: "/reports/member-performance",
         color: "text-violet-600",
@@ -264,9 +265,9 @@ export default function ReportsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Laporan</h1>
             <p className="text-gray-600 mt-2">
-              Comprehensive business analytics and insights
+              Analitik bisnis dan wawasan komprehensif
             </p>
           </div>
           <div className="flex space-x-3">
@@ -276,11 +277,11 @@ export default function ReportsPage() {
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
             >
               <ClockIcon className="w-4 h-4 mr-2" />
-              {isGenerating ? "Generating..." : "Generate All"}
+              {isGenerating ? "Membuat..." : "Buat Semua"}
             </button>
             <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
               <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
-              Export All
+              Ekspor Semua
             </button>
           </div>
         </div>
@@ -326,13 +327,13 @@ export default function ReportsPage() {
                   <button
                     onClick={() => handleReportClick(report.href)}
                     className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"
-                    title="View Report"
+                    title="Lihat Laporan"
                   >
                     <EyeIcon className="w-4 h-4" />
                   </button>
                   <button
                     className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                    title="Export Report"
+                    title="Ekspor Laporan"
                   >
                     <ArrowDownTrayIcon className="w-4 h-4" />
                   </button>

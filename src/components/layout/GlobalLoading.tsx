@@ -16,10 +16,10 @@ export default function GlobalLoading() {
         </div>
         <div className="text-center">
           <p className="text-[var(--framer-color-text)] font-semibold">
-            Loading...
+            Memuat...
           </p>
           <p className="text-[var(--framer-color-text-secondary)] text-sm">
-            Please wait a moment
+            Mohon tunggu sebentar
           </p>
         </div>
       </div>

@@ -27,13 +27,13 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
   const getErrorMessage = (errorCode: string) => {
     switch (errorCode) {
       case "invalid_reset_link":
-        return "Invalid or expired password reset link. Please request a new one.";
+        return "Tautan reset password tidak valid atau sudah kedaluwarsa. Silakan minta yang baru.";
       case "session_not_created":
-        return "Unable to create session. Please try again.";
+        return "Tidak dapat membuat sesi. Silakan coba lagi.";
       case "no_reset_tokens":
-        return "No reset tokens found. Please request a new password reset.";
+        return "Token reset tidak ditemukan. Silakan minta reset password baru.";
       case "reset_failed":
-        return "Password reset failed. Please try again.";
+        return "Reset password gagal. Silakan coba lagi.";
       default:
         return initialError || "";
     }
@@ -63,7 +63,7 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
           },
         });
         if (error) throw error;
-        setError("Check your email for the confirmation link!");
+        setError("Periksa email Anda untuk tautan konfirmasi!");
       }
     } catch (error: any) {
       setError(error.message);
@@ -77,12 +77,12 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            {mode === "signin" ? "Welcome back" : "Get started"}
+            {mode === "signin" ? "Selamat datang kembali" : "Mulai sekarang"}
           </h2>
           <p className="text-gray-600">
             {mode === "signin"
-              ? "Sign in to your account to continue"
-              : "Create your account to get started"}
+              ? "Masuk ke akun Anda untuk melanjutkan"
+              : "Buat akun Anda untuk memulai"}
           </p>
         </div>
 
@@ -90,12 +90,12 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
           {mode === "signup" && (
             <div>
               <Input
-                label="Full Name"
+                label="Nama Lengkap"
                 id="name"
                 name="name"
                 type="text"
                 required
-                placeholder="Enter your full name"
+                placeholder="Masukkan nama lengkap Anda"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="h-12 text-base"
@@ -105,13 +105,13 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
 
           <div>
             <Input
-              label="Email Address"
+              label="Alamat Email"
               id="email"
               name="email"
               type="email"
               autoComplete="email"
               required
-              placeholder="Enter your email address"
+              placeholder="Masukkan alamat email Anda"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="h-12 text-base"
@@ -121,7 +121,7 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
           <div>
             <div className="relative">
               <Input
-                label="Password"
+                label="Kata Sandi"
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
@@ -129,7 +129,7 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
                   mode === "signin" ? "current-password" : "new-password"
                 }
                 required
-                placeholder="Enter your password"
+                placeholder="Masukkan kata sandi Anda"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="h-12 text-base pr-12"
@@ -185,7 +185,7 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
                 onClick={() => setShowForgotPassword(true)}
                 className="text-sm font-medium text-[var(--framer-color-tint)] hover:text-[var(--framer-color-tint-hover)] transition-colors"
               >
-                Forgot your password?
+                Lupa kata sandi?
               </button>
             </div>
           )}
@@ -221,20 +221,18 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
             size="lg"
             className="w-full h-12 text-base font-semibold"
           >
-            {mode === "signin" ? "Sign In" : "Create Account"}
+            {mode === "signin" ? "Masuk" : "Buat Akun"}
           </Button>
         </form>
 
         <div className="mt-8 text-center">
           <p className="text-gray-600">
-            {mode === "signin"
-              ? "Don't have an account? "
-              : "Already have an account? "}
+            {mode === "signin" ? "Belum punya akun? " : "Sudah punya akun? "}
             <a
               href={mode === "signin" ? "/signup" : "/login"}
               className="font-semibold text-[var(--framer-color-tint)] hover:text-[var(--framer-color-tint-hover)] transition-colors"
             >
-              {mode === "signin" ? "Sign up" : "Sign in"}
+              {mode === "signin" ? "Daftar" : "Masuk"}
             </a>
           </p>
         </div>

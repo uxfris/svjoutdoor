@@ -273,11 +273,6 @@ export default function POSPage() {
 
   return (
     <div className="p-6 h-full">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Point of Sale</h1>
-        <p className="text-gray-600">Process sales transactions</p>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
         {/* Categories Section */}
         <div className="lg:col-span-2">
@@ -300,14 +295,12 @@ export default function POSPage() {
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                       />
                     </svg>
-                    Categories
+                    Kategori
                   </h2>
                   <p className="text-sm text-gray-600 mt-1">
                     {filteredCategories.length}{" "}
-                    {filteredCategories.length === 1
-                      ? "category"
-                      : "categories"}{" "}
-                    available
+                    {filteredCategories.length === 1 ? "kategori" : "kategori"}{" "}
+                    tersedia
                   </p>
                 </div>
               </div>
@@ -332,7 +325,7 @@ export default function POSPage() {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search categories..."
+                    placeholder="Cari kategori..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
@@ -360,13 +353,13 @@ export default function POSPage() {
                   </svg>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
                     {searchTerm
-                      ? "No categories found"
-                      : "No categories available"}
+                      ? "Tidak ada kategori ditemukan"
+                      : "Tidak ada kategori tersedia"}
                   </h3>
                   <p className="text-gray-500 text-sm">
                     {searchTerm
-                      ? "Try adjusting your search terms"
-                      : "Add categories to get started"}
+                      ? "Coba sesuaikan kata kunci pencarian"
+                      : "Tambahkan kategori untuk memulai"}
                   </p>
                 </div>
               ) : (
@@ -391,7 +384,7 @@ export default function POSPage() {
 
                         <div className="flex items-center justify-between pt-2 border-t border-gray-200">
                           <span className="text-xs text-gray-500">
-                            Stock: {category.stok}
+                            Stok: {category.stok}
                           </span>
                           <div className="flex items-center text-xs text-gray-500">
                             <svg
@@ -407,7 +400,7 @@ export default function POSPage() {
                                 d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                               />
                             </svg>
-                            Add to cart
+                            Tambah
                           </div>
                         </div>
                       </div>
@@ -440,10 +433,11 @@ export default function POSPage() {
                         d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"
                       />
                     </svg>
-                    Shopping Cart
+                    Keranjang Belanja
                   </h2>
                   <p className="text-sm text-gray-600 mt-1">
-                    {cart.length} {cart.length === 1 ? "item" : "items"} in cart
+                    {cart.length} {cart.length === 1 ? "item" : "item"} dalam
+                    keranjang
                   </p>
                 </div>
                 {cart.length > 0 && (
@@ -464,7 +458,7 @@ export default function POSPage() {
                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                       />
                     </svg>
-                    Clear All
+                    Hapus Semua
                   </button>
                 )}
               </div>
@@ -472,7 +466,7 @@ export default function POSPage() {
               {/* Customer Selection */}
               <div className="mt-4 hidden">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Customer
+                  Pelanggan
                 </label>
                 <Select
                   value={selectedMember?.toString() || ""}
@@ -480,7 +474,7 @@ export default function POSPage() {
                     setSelectedMember(Number(e.target.value) || null)
                   }
                   options={[
-                    { value: "", label: "Walk-in Customer" },
+                    { value: "", label: "Pelanggan Langsung" },
                     ...members.map((member) => ({
                       value: member.id_member.toString(),
                       label: member.nama,
@@ -508,10 +502,10 @@ export default function POSPage() {
                     />
                   </svg>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Your cart is empty
+                    Keranjang Anda kosong
                   </h3>
                   <p className="text-gray-500 text-sm">
-                    Add categories from the left to get started
+                    Tambahkan kategori dari kiri untuk memulai
                   </p>
                 </div>
               ) : (
@@ -555,7 +549,7 @@ export default function POSPage() {
                           <div className="flex items-center space-x-2">
                             <div className="relative flex-1">
                               <label className="block text-xs font-medium text-gray-600 mb-1">
-                                Price:
+                                Harga:
                               </label>
                               <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -582,7 +576,7 @@ export default function POSPage() {
                           {/* Discount Controls */}
                           <div className="space-y-2">
                             <label className="block text-xs font-medium text-gray-600">
-                              Discount:
+                              Diskon:
                             </label>
                             <div className="flex items-center space-x-2">
                               {/* Discount Type Toggle */}
@@ -654,7 +648,7 @@ export default function POSPage() {
                             <button
                               onClick={() => removeFromCart(item.id)}
                               className="px-3 py-2 text-xs bg-red-50 hover:bg-red-100 text-red-600 rounded-md transition-colors border border-red-200"
-                              title="Remove item"
+                              title="Hapus item"
                             >
                               <svg
                                 className="w-3 h-3"
@@ -697,7 +691,7 @@ export default function POSPage() {
                       d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
                     />
                   </svg>
-                  Order Summary
+                  Ringkasan Pesanan
                 </h3>
 
                 <div className="bg-white rounded-lg p-4 space-y-3">
@@ -713,7 +707,7 @@ export default function POSPage() {
                   {getTotalDiscount() > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-600">
-                        Discount:
+                        Diskon:
                       </span>
                       <span className="text-sm font-semibold text-red-600">
                         - Rp {getTotalDiscount().toLocaleString()}
@@ -751,7 +745,7 @@ export default function POSPage() {
                       d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                     />
                   </svg>
-                  Payment Method
+                  Metode Pembayaran
                 </h3>
 
                 <div className="bg-white rounded-lg p-3">
@@ -788,7 +782,7 @@ export default function POSPage() {
                           />
                         </svg>
                         <span className="text-sm font-medium text-gray-900">
-                          Cash
+                          Tunai
                         </span>
                       </div>
                     </label>
@@ -849,15 +843,15 @@ export default function POSPage() {
                       d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                     />
                   </svg>
-                  Payment Amount
+                  Jumlah Pembayaran
                 </h3>
 
                 <div className="bg-white rounded-lg p-4 space-y-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">
                       {paymentMethod === "debit"
-                        ? "Debit Amount"
-                        : "Amount Received"}
+                        ? "Jumlah Debit"
+                        : "Jumlah Diterima"}
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -873,8 +867,8 @@ export default function POSPage() {
                         className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder={
                           paymentMethod === "debit"
-                            ? "Enter debit amount"
-                            : "Enter amount received"
+                            ? "Masukkan jumlah debit"
+                            : "Masukkan jumlah diterima"
                         }
                       />
                     </div>
@@ -887,28 +881,15 @@ export default function POSPage() {
                       onClick={() => setPaymentReceived(getTotal())}
                       className="px-4 py-2 text-sm bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg font-medium transition-colors border border-indigo-200"
                     >
-                      Exact Amount
+                      Jumlah Tepat
                     </button>
                     <button
                       type="button"
                       onClick={() => setPaymentReceived(0)}
                       className="px-4 py-2 text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg font-medium transition-colors border border-gray-200"
                     >
-                      Clear
+                      Hapus
                     </button>
-                    {paymentMethod === "cash" && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setPaymentReceived(
-                            Math.ceil(getTotal() / 1000) * 1000
-                          )
-                        }
-                        className="px-4 py-2 text-sm bg-green-50 hover:bg-green-100 text-green-700 rounded-lg font-medium transition-colors border border-green-200"
-                      >
-                        Round Up
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
@@ -930,12 +911,12 @@ export default function POSPage() {
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    Payment Summary
+                    Ringkasan Pembayaran
                   </h3>
                   <div className="bg-white rounded-lg p-4 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-600">
-                        Amount to Pay:
+                        Jumlah yang Harus Dibayar:
                       </span>
                       <span className="text-sm font-semibold text-gray-900">
                         Rp {getTotal().toLocaleString()}
@@ -944,8 +925,8 @@ export default function POSPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-600">
                         {paymentMethod === "debit"
-                          ? "Debit Amount:"
-                          : "Amount Received:"}
+                          ? "Jumlah Debit:"
+                          : "Jumlah Diterima:"}
                       </span>
                       <span className="text-sm font-semibold text-gray-900">
                         Rp {paymentReceived.toLocaleString()}
@@ -956,7 +937,7 @@ export default function POSPage() {
                       <div className="border-t pt-3">
                         <div className="flex justify-between items-center">
                           <span className="text-base font-semibold text-gray-900">
-                            Change:
+                            Kembalian:
                           </span>
                           <span
                             className={`text-lg font-bold ${
@@ -985,8 +966,8 @@ export default function POSPage() {
                             }`}
                           >
                             {paymentReceived >= getTotal()
-                              ? "Complete"
-                              : "Pending"}
+                              ? "Selesai"
+                              : "Menunggu"}
                           </span>
                         </div>
                       </div>
@@ -1119,7 +1100,7 @@ export default function POSPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Processing Sale...
+                    Memproses Penjualan...
                   </>
                 ) : (
                   <>
@@ -1136,7 +1117,7 @@ export default function POSPage() {
                         d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                       />
                     </svg>
-                    Process Sale
+                    Proses Penjualan
                   </>
                 )}
               </button>

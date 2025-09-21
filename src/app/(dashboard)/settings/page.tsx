@@ -147,8 +147,8 @@ export default function SettingsPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600">Manage system settings</p>
+        <h1 className="text-3xl font-bold text-gray-900">Pengaturan</h1>
+        <p className="text-gray-600">Kelola pengaturan sistem</p>
       </div>
 
       <div className="space-y-6">
@@ -156,13 +156,13 @@ export default function SettingsPage() {
           {/* Company Information */}
           <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Company Information
+              Informasi Perusahaan
             </h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Name
+                    Nama Perusahaan
                   </label>
                   <input
                     type="text"
@@ -170,12 +170,12 @@ export default function SettingsPage() {
                     value={formData.nama_perusahaan}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                    placeholder="Enter company name"
+                    placeholder="Masukkan nama perusahaan"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Address
+                    Alamat Perusahaan
                   </label>
                   <input
                     type="text"
@@ -183,12 +183,12 @@ export default function SettingsPage() {
                     value={formData.alamat}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                    placeholder="Enter company address"
+                    placeholder="Masukkan alamat perusahaan"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
+                    Nomor Telepon
                   </label>
                   <input
                     type="tel"
@@ -196,7 +196,7 @@ export default function SettingsPage() {
                     value={formData.telepon}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                    placeholder="Enter phone number"
+                    placeholder="Masukkan nomor telepon"
                   />
                 </div>
                 <div>
@@ -209,7 +209,7 @@ export default function SettingsPage() {
                     value={formData.email}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                    placeholder="Enter email address"
+                    placeholder="Masukkan alamat email"
                   />
                 </div>
               </div>
@@ -219,13 +219,13 @@ export default function SettingsPage() {
           {/* Receipt Settings */}
           <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Receipt Settings
+              Pengaturan Struk
             </h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Receipt Width
+                    Lebar Struk
                   </label>
                   <select
                     name="receipt_width_mm"
@@ -233,17 +233,15 @@ export default function SettingsPage() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
                   >
-                    <option value={50}>50mm (2 inches) - Very Compact</option>
-                    <option value={58}>
-                      58mm (2.3 inches) - Small Receipt
-                    </option>
-                    <option value={75}>75mm (3 inches) - Standard</option>
-                    <option value={80}>80mm (3.1 inches) - Large</option>
+                    <option value={50}>50mm (2 inci) - Sangat Kompak</option>
+                    <option value={58}>58mm (2.3 inci) - Struk Kecil</option>
+                    <option value={75}>75mm (3 inci) - Standar</option>
+                    <option value={80}>80mm (3.1 inci) - Besar</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Font Size
+                    Ukuran Font
                   </label>
                   <select
                     name="receipt_font_size"
@@ -251,16 +249,16 @@ export default function SettingsPage() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
                   >
-                    <option value={10}>10px - Very Small</option>
-                    <option value={11}>11px - Small</option>
-                    <option value={12}>12px - Standard</option>
-                    <option value={14}>14px - Large</option>
-                    <option value={16}>16px - Very Large</option>
+                    <option value={10}>10px - Sangat Kecil</option>
+                    <option value={11}>11px - Kecil</option>
+                    <option value={12}>12px - Standar</option>
+                    <option value={14}>14px - Besar</option>
+                    <option value={16}>16px - Sangat Besar</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Paper Type
+                    Jenis Kertas
                   </label>
                   <select
                     name="receipt_paper_type"
@@ -268,15 +266,15 @@ export default function SettingsPage() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
                   >
-                    <option value="thermal_50mm">Thermal 50mm</option>
-                    <option value="thermal_58mm">Thermal 58mm</option>
-                    <option value="thermal_75mm">Thermal 75mm</option>
-                    <option value="thermal_80mm">Thermal 80mm</option>
+                    <option value="thermal_50mm">Termal 50mm</option>
+                    <option value="thermal_58mm">Termal 58mm</option>
+                    <option value="thermal_75mm">Termal 75mm</option>
+                    <option value="thermal_80mm">Termal 80mm</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Receipt Footer
+                    Footer Struk
                   </label>
                   <textarea
                     name="receipt_footer"
@@ -284,7 +282,7 @@ export default function SettingsPage() {
                     value={formData.receipt_footer}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                    placeholder="Enter receipt footer text (e.g., Thank you for your business!)"
+                    placeholder="Masukkan teks footer struk (contoh: Terima kasih atas kepercayaan Anda!)"
                   />
                 </div>
               </div>
@@ -294,23 +292,23 @@ export default function SettingsPage() {
           {/* System Settings */}
           <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              System Settings
+              Pengaturan Sistem
             </h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Currency
+                    Mata Uang
                   </label>
                   <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
-                    <option value="IDR">Indonesian Rupiah (IDR)</option>
-                    <option value="USD">US Dollar (USD)</option>
+                    <option value="IDR">Rupiah Indonesia (IDR)</option>
+                    <option value="USD">Dolar AS (USD)</option>
                     <option value="EUR">Euro (EUR)</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date Format
+                    Format Tanggal
                   </label>
                   <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
                     <option value="DD/MM/YYYY">DD/MM/YYYY</option>
@@ -320,7 +318,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Time Zone
+                    Zona Waktu
                   </label>
                   <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
                     <option value="Asia/Jakarta">Asia/Jakarta (WIB)</option>
@@ -339,7 +337,7 @@ export default function SettingsPage() {
               disabled={saving}
               className="px-6 py-2 bg-[var(--framer-color-tint)] text-white rounded-lg hover:bg-[var(--framer-color-tint-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? "Saving..." : "Save Settings"}
+              {saving ? "Menyimpan..." : "Simpan Pengaturan"}
             </button>
           </div>
         </form>
