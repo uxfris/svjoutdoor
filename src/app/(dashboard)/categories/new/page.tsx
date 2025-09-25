@@ -9,8 +9,8 @@ import { createClient } from "@/lib/supabase/client";
 export default function NewCategoryPage() {
   const [formData, setFormData] = useState({
     nama_kategori: "",
-    harga_jual: 0,
-    stok: 0,
+    harga_jual: "",
+    stok: "",
     kode_kategori: "",
   });
   const [loading, setLoading] = useState(false);
@@ -26,8 +26,8 @@ export default function NewCategoryPage() {
     try {
       const { error } = await supabase.from("kategori").insert({
         nama_kategori: formData.nama_kategori,
-        harga_jual: formData.harga_jual,
-        stok: formData.stok,
+        harga_jual: Number(formData.harga_jual || 0),
+        stok: Number(formData.stok || 0),
         kode_kategori: formData.kode_kategori,
       });
 
@@ -42,10 +42,20 @@ export default function NewCategoryPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === "harga_jual" || name === "stok") {
+      // Keep digits only and strip leading zeros while preserving single zero when empty
+      let sanitized = value.replace(/[^\d]/g, "");
+      sanitized = sanitized.replace(/^0+(?=\d)/, "");
+      setFormData({
+        ...formData,
+        [name]: sanitized,
+      });
+      return;
+    }
     setFormData({
       ...formData,
-      [e.target.name]:
-        e.target.type === "number" ? Number(e.target.value) : e.target.value,
+      [name]: value,
     });
   };
 

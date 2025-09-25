@@ -1,11 +1,12 @@
 import AuthForm from "@/components/auth/AuthForm";
 
 interface LoginPageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default function LoginPage({ searchParams }: LoginPageProps) {
-  const error = searchParams.error as string;
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const error = params.error as string | undefined;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
