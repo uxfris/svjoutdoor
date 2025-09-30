@@ -23,22 +23,6 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
   const router = useRouter();
   const supabase = createClient();
 
-  // Map error codes to user-friendly messages
-  const getErrorMessage = (errorCode: string) => {
-    switch (errorCode) {
-      case "invalid_reset_link":
-        return "Tautan reset password tidak valid atau sudah kedaluwarsa. Silakan minta yang baru.";
-      case "session_not_created":
-        return "Tidak dapat membuat sesi. Silakan coba lagi.";
-      case "no_reset_tokens":
-        return "Token reset tidak ditemukan. Silakan minta reset password baru.";
-      case "reset_failed":
-        return "Reset password gagal. Silakan coba lagi.";
-      default:
-        return initialError || "";
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -53,15 +37,22 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
         if (error) throw error;
         router.push("/dashboard");
       } else {
+        const siteUrl =
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          (typeof window !== "undefined" ? window.location.origin : "");
+        const emailRedirectTo = `${siteUrl}/auth/callback?next=/dashboard`;
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
+            emailRedirectTo,
             data: {
               name,
             },
           },
         });
+        console.log("Error di sini: " + error);
         if (error) throw error;
         setError("Periksa email Anda untuk tautan konfirmasi!");
       }
@@ -207,9 +198,7 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-red-800">
-                    {getErrorMessage(error)}
-                  </p>
+                  <p className="text-sm text-red-800">{error}</p>
                 </div>
               </div>
             </div>
@@ -225,7 +214,7 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
           </Button>
         </form>
 
-        <div className="mt-8 text-center">
+        {/* <div className="mt-8 text-center">
           <p className="text-gray-600">
             {mode === "signin" ? "Belum punya akun? " : "Sudah punya akun? "}
             <a
@@ -235,7 +224,7 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
               {mode === "signin" ? "Daftar" : "Masuk"}
             </a>
           </p>
-        </div>
+        </div> */}
       </div>
 
       <ForgotPasswordModal
