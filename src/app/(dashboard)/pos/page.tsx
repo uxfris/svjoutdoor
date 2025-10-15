@@ -186,11 +186,11 @@ export default function POSPage() {
   const formatNumber = (value: number | string): string => {
     if (!value || value === 0) return "";
     const num = typeof value === "string" ? parseFloat(value) : value;
-    return num.toLocaleString();
+    return num.toLocaleString("en-US");
   };
 
   const parseFormattedNumber = (value: string): number => {
-    return parseFloat(value.replace(/,/g, "")) || 0;
+    return parseFloat(value.replace(/[^0-9.]/g, "")) || 0; // hapus semua non-digit kecuali titik
   };
 
   const processSale = async () => {
