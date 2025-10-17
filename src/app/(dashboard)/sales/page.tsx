@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 
 interface Sale {
   id_penjualan: number;
@@ -28,14 +29,52 @@ export default function SalesPage() {
   const [allUsers, setAllUsers] = useState<
     { id: string; name: string; level: number }[]
   >([]);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    saleId: number | null;
+    saleInfo: string;
+  }>({
+    isOpen: false,
+    saleId: null,
+    saleInfo: "",
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    level: number;
+  } | null>(null);
 
   useEffect(() => {
     fetchSales();
+    fetchCurrentUser();
   }, []);
 
   useEffect(() => {
     filterSales();
   }, [sales, searchTerm, paymentFilter, dateFilter, cashierFilter]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: userData } = await supabase
+          .from("users")
+          .select("id, level")
+          .eq("id", user.id)
+          .single();
+
+        if (userData) {
+          setCurrentUser(userData);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+    }
+  };
 
   const fetchSales = async () => {
     try {
@@ -132,6 +171,64 @@ export default function SalesPage() {
     }
 
     setFilteredSales(filtered);
+  };
+
+  const handleDeleteClick = (sale: Sale) => {
+    const saleInfo = `Sale #${sale.id_penjualan} - ${
+      sale.member?.nama || "Walk-in Customer"
+    } - Rp ${sale.total_harga.toLocaleString()}`;
+    setDeleteDialog({
+      isOpen: true,
+      saleId: sale.id_penjualan,
+      saleInfo,
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteDialog.saleId) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/sales/${deleteDialog.saleId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete sale");
+      }
+
+      // Refresh the sales list
+      await fetchSales();
+
+      // Close dialog
+      setDeleteDialog({
+        isOpen: false,
+        saleId: null,
+        saleInfo: "",
+      });
+
+      // Show success message (you could add a toast notification here)
+      console.log("Sale deleted successfully");
+    } catch (error) {
+      console.error("Error deleting sale:", error);
+      // You could add error toast notification here
+      alert(
+        `Error deleting sale: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialog({
+      isOpen: false,
+      saleId: null,
+      saleInfo: "",
+    });
   };
 
   if (loading) {
@@ -483,7 +580,20 @@ export default function SalesPage() {
                           </svg>
                           View
                         </Link>
-                        <button className="inline-flex items-center px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium rounded-lg transition-colors">
+                        <button
+                          onClick={() => handleDeleteClick(sale)}
+                          disabled={!currentUser || currentUser.level !== 1}
+                          className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                            currentUser && currentUser.level === 1
+                              ? "bg-red-50 hover:bg-red-100 text-red-700"
+                              : "bg-gray-50 text-gray-400 cursor-not-allowed"
+                          }`}
+                          title={
+                            currentUser && currentUser.level === 1
+                              ? "Delete sale"
+                              : "Only admins can delete sales"
+                          }
+                        >
                           <svg
                             className="w-3 h-3 mr-1"
                             fill="none"
@@ -560,6 +670,21 @@ export default function SalesPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Sale Transaction"
+        message={`Are you sure you want to delete this sale transaction? This action cannot be undone and will restore the stock for all items in this sale.
+
+${deleteDialog.saleInfo}`}
+        confirmText="Delete Sale"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

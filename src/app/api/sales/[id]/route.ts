@@ -1,6 +1,111 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const supabase = await createClient();
+    const resolvedParams = await params;
+    const saleId = parseInt(resolvedParams.id);
+
+    if (isNaN(saleId)) {
+      return NextResponse.json({ error: "Invalid sale ID" }, { status: 400 });
+    }
+
+    // Get current user
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user is admin (only admins can delete sales)
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("level")
+      .eq("id", user.id)
+      .single();
+
+    if (userError || !userData || userData.level !== 1) {
+      return NextResponse.json(
+        { error: "Access denied. Admin privileges required." },
+        { status: 403 }
+      );
+    }
+
+    // Get sale details first to restore stock
+    const { data: saleDetails, error: detailsError } = await supabase
+      .from("penjualan_detail")
+      .select("*")
+      .eq("id_penjualan", saleId);
+
+    if (detailsError) {
+      console.error("Error fetching sale details:", detailsError);
+      return NextResponse.json(
+        { error: detailsError.message },
+        { status: 400 }
+      );
+    }
+
+    // Restore stock for each item
+    if (saleDetails && saleDetails.length > 0) {
+      for (const detail of saleDetails) {
+        const { error: stockError } = await supabase.rpc(
+          "increase_category_stock",
+          {
+            category_id: detail.id_kategori,
+            quantity: detail.jumlah,
+          }
+        );
+
+        if (stockError) {
+          console.error("Error restoring stock:", stockError);
+          // Continue with deletion even if stock restoration fails
+        }
+      }
+    }
+
+    // Delete sale details first (foreign key constraint)
+    const { error: deleteDetailsError } = await supabase
+      .from("penjualan_detail")
+      .delete()
+      .eq("id_penjualan", saleId);
+
+    if (deleteDetailsError) {
+      console.error("Error deleting sale details:", deleteDetailsError);
+      return NextResponse.json(
+        { error: deleteDetailsError.message },
+        { status: 400 }
+      );
+    }
+
+    // Delete the sale
+    const { error: deleteSaleError } = await supabase
+      .from("penjualan")
+      .delete()
+      .eq("id_penjualan", saleId);
+
+    if (deleteSaleError) {
+      console.error("Error deleting sale:", deleteSaleError);
+      return NextResponse.json(
+        { error: deleteSaleError.message },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({ message: "Sale deleted successfully" });
+  } catch (error) {
+    console.error("Delete sale error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

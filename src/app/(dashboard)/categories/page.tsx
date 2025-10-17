@@ -48,7 +48,25 @@ export default function CategoriesPage() {
   };
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus kategori "${name}"?`)) {
+    // Check if there are any sales details using this category
+    const { data: salesDetails, error: checkError } = await supabase
+      .from("penjualan_detail")
+      .select("id_penjualan_detail")
+      .eq("id_kategori", id);
+
+    if (checkError) {
+      setError(checkError.message);
+      return;
+    }
+
+    const hasRelatedTransactions = salesDetails && salesDetails.length > 0;
+
+    let confirmMessage = `Apakah Anda yakin ingin menghapus kategori "${name}"?`;
+    if (hasRelatedTransactions) {
+      confirmMessage += `\n\nPERINGATAN: Kategori ini digunakan dalam ${salesDetails.length} transaksi penjualan. Menghapus kategori ini akan juga menghapus semua detail transaksi yang terkait.`;
+    }
+
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -56,6 +74,17 @@ export default function CategoriesPage() {
     setError("");
 
     try {
+      // If there are related sales details, delete them first
+      if (hasRelatedTransactions) {
+        const { error: deleteDetailsError } = await supabase
+          .from("penjualan_detail")
+          .delete()
+          .eq("id_kategori", id);
+
+        if (deleteDetailsError) throw deleteDetailsError;
+      }
+
+      // Now delete the category
       const { error } = await supabase
         .from("kategori")
         .delete()
