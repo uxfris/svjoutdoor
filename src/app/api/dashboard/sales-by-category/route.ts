@@ -150,16 +150,16 @@ export async function GET(request: NextRequest) {
       categoryStats[categoryId].total_revenue += item.subtotal || 0;
     });
 
-    // Convert unique sales sets to counts
-    Object.values(categoryStats).forEach((category) => {
-      category.total_sales = category.unique_sales.size;
-      delete category.unique_sales; // Remove the Set from final data
-    });
-
-    // Convert to array and sort by revenue
-    const categoryStatsArray = Object.values(categoryStats).sort(
-      (a, b) => b.total_revenue - a.total_revenue
-    );
+    // Convert unique sales sets to counts and sort by revenue
+    const categoryStatsArray = Object.values(categoryStats)
+      .map((category) => {
+        const { unique_sales, ...categoryData } = category;
+        return {
+          ...categoryData,
+          total_sales: unique_sales.size,
+        };
+      })
+      .sort((a, b) => b.total_revenue - a.total_revenue);
 
     // Calculate total unique sales across all categories
     const allUniqueSales = new Set<number>();
