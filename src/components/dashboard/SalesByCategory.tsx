@@ -11,7 +11,7 @@ import {
 interface CategorySalesData {
   id_kategori: number;
   nama_kategori: string;
-  total_sales: number; // Count of unique sales (not line items)
+  total_sales: number; // Count of unique sales for this category only
   total_quantity: number; // Total quantity sold
   total_revenue: number; // Total revenue from subtotals
 }
@@ -40,23 +40,31 @@ export function SalesByCategory({
           throw new Error("Failed to fetch sales by category");
         }
         const data = await response.json();
-        return data.data || [];
+        return {
+          categoryData: data.data || [],
+          totalUniqueSales: data.totalUniqueSales || 0,
+        };
       } catch (error) {
         console.error("Error fetching sales by category:", error);
-        return [];
+        return {
+          categoryData: [],
+          totalUniqueSales: 0,
+        };
       }
     },
     { ttl: 2 * 60 * 1000 } // 2 minutes cache
   );
 
   const [categoryData, setCategoryData] = useState<CategorySalesData[]>([]);
+  const [totalUniqueSales, setTotalUniqueSales] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
         const data = await fetchSalesByCategory();
-        setCategoryData(data);
+        setCategoryData(data.categoryData);
+        setTotalUniqueSales(data.totalUniqueSales);
       } catch (error) {
         console.error("Error loading category data:", error);
       } finally {
@@ -74,12 +82,9 @@ export function SalesByCategory({
     );
   }, [categoryData]);
 
-  const totalSales = useMemo(() => {
-    return categoryData.reduce(
-      (sum, category) => sum + category.total_sales,
-      0
-    );
-  }, [categoryData]);
+  // Use the total unique sales from the API instead of summing category sales
+  // This ensures consistency with cashier performance counts
+  const totalSales = totalUniqueSales;
 
   const totalQuantity = useMemo(() => {
     return categoryData.reduce(

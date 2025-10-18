@@ -161,6 +161,16 @@ export async function GET(request: NextRequest) {
       (a, b) => b.total_revenue - a.total_revenue
     );
 
+    // Calculate total unique sales across all categories
+    const allUniqueSales = new Set<number>();
+    salesData?.forEach((item: any) => {
+      const saleId = item.penjualan?.id_penjualan;
+      if (saleId) {
+        allUniqueSales.add(saleId);
+      }
+    });
+    const totalUniqueSales = allUniqueSales.size;
+
     // Data validation: Check if sales data is consistent
     if (timeFilter !== "all") {
       // Get total sales count from penjualan table for validation
@@ -196,6 +206,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       data: categoryStatsArray,
+      totalUniqueSales,
       timeFilter,
       dateRange: {
         start: startDate.toISOString(),
