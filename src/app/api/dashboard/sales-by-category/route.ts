@@ -121,12 +121,14 @@ export async function GET(request: NextRequest) {
         total_sales: number;
         total_quantity: number;
         total_revenue: number;
+        unique_sales: Set<number>; // Track unique sales for this category
       };
     } = {};
 
     salesData?.forEach((item: any) => {
       const categoryId = item.id_kategori;
       const categoryName = item.kategori?.nama_kategori || "Unknown";
+      const saleId = item.penjualan?.id_penjualan;
 
       if (!categoryStats[categoryId]) {
         categoryStats[categoryId] = {
@@ -135,18 +137,62 @@ export async function GET(request: NextRequest) {
           total_sales: 0,
           total_quantity: 0,
           total_revenue: 0,
+          unique_sales: new Set(),
         };
       }
 
-      categoryStats[categoryId].total_sales += 1;
+      // Add unique sale ID to track distinct sales
+      if (saleId) {
+        categoryStats[categoryId].unique_sales.add(saleId);
+      }
+
       categoryStats[categoryId].total_quantity += item.jumlah || 0;
       categoryStats[categoryId].total_revenue += item.subtotal || 0;
+    });
+
+    // Convert unique sales sets to counts
+    Object.values(categoryStats).forEach((category) => {
+      category.total_sales = category.unique_sales.size;
+      delete category.unique_sales; // Remove the Set from final data
     });
 
     // Convert to array and sort by revenue
     const categoryStatsArray = Object.values(categoryStats).sort(
       (a, b) => b.total_revenue - a.total_revenue
     );
+
+    // Data validation: Check if sales data is consistent
+    if (timeFilter !== "all") {
+      // Get total sales count from penjualan table for validation
+      let validationQuery = supabase
+        .from("penjualan")
+        .select("id_penjualan, total_harga")
+        .gte("created_at", startDate.toISOString())
+        .lt("created_at", endDate.toISOString());
+
+      if (!isAdmin) {
+        validationQuery = validationQuery.eq("id_user", user.id);
+      }
+
+      const { data: validationData } = await validationQuery;
+
+      // Calculate total revenue from penjualan table
+      const totalRevenueFromSales =
+        validationData?.reduce((sum, sale) => sum + sale.total_harga, 0) || 0;
+
+      // Calculate total revenue from category stats
+      const totalRevenueFromCategories = categoryStatsArray.reduce(
+        (sum, category) => sum + category.total_revenue,
+        0
+      );
+
+      // Log discrepancy if found (for debugging)
+      if (Math.abs(totalRevenueFromSales - totalRevenueFromCategories) > 1) {
+        console.warn(
+          `Revenue discrepancy detected: Sales table: ${totalRevenueFromSales}, Categories: ${totalRevenueFromCategories}`
+        );
+      }
+    }
 
     return NextResponse.json({
       data: categoryStatsArray,

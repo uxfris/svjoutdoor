@@ -384,18 +384,34 @@ export default function DashboardPage() {
           (sale) => sale.payment_method === "debit"
         );
 
+        // Calculate totals
+        const totalRevenue = userSales.reduce(
+          (sum, sale) => sum + sale.total_harga,
+          0
+        );
+        const totalCash = cashSales.reduce(
+          (sum, sale) => sum + sale.total_harga,
+          0
+        );
+        const totalDebit = debitSales.reduce(
+          (sum, sale) => sum + sale.total_harga,
+          0
+        );
+
+        // Validate data consistency (cash + debit should equal total revenue)
+        const calculatedTotal = totalCash + totalDebit;
+        if (Math.abs(totalRevenue - calculatedTotal) > 1) {
+          console.warn(
+            `Revenue mismatch for cashier ${user.name}: Total=${totalRevenue}, Cash+Debit=${calculatedTotal}`
+          );
+        }
+
         stats[user.id] = {
           name: user.name,
           totalSales: userSales.length,
-          totalRevenue: userSales.reduce(
-            (sum, sale) => sum + sale.total_harga,
-            0
-          ),
-          totalCash: cashSales.reduce((sum, sale) => sum + sale.total_harga, 0),
-          totalDebit: debitSales.reduce(
-            (sum, sale) => sum + sale.total_harga,
-            0
-          ),
+          totalRevenue,
+          totalCash,
+          totalDebit,
         };
       });
 
@@ -1269,14 +1285,16 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Sales by Category */}
-      <div className="mb-8">
-        <SalesByCategory
-          timeFilter={categoryTimeFilter}
-          onTimeFilterChange={setCategoryTimeFilter}
-          isAdmin={isAdmin}
-        />
-      </div>
+      {/* Sales by Category - Only for Admin */}
+      {isAdmin && (
+        <div className="mb-8">
+          <SalesByCategory
+            timeFilter={categoryTimeFilter}
+            onTimeFilterChange={setCategoryTimeFilter}
+            isAdmin={isAdmin}
+          />
+        </div>
+      )}
 
       {/* Recent Sales */}
       <div className="mb-6">

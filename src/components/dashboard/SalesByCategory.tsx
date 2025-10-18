@@ -11,9 +11,9 @@ import {
 interface CategorySalesData {
   id_kategori: number;
   nama_kategori: string;
-  total_sales: number;
-  total_quantity: number;
-  total_revenue: number;
+  total_sales: number; // Count of unique sales (not line items)
+  total_quantity: number; // Total quantity sold
+  total_revenue: number; // Total revenue from subtotals
 }
 
 interface SalesByCategoryProps {
