@@ -34,6 +34,8 @@ export async function GET(request: NextRequest) {
     // Get time filter from query params
     const { searchParams } = new URL(request.url);
     const timeFilter = searchParams.get("time") || "today";
+    const startParam = searchParams.get("start");
+    const endParam = searchParams.get("end");
 
     // Calculate date range based on filter
     const now = new Date();
@@ -41,38 +43,48 @@ export async function GET(request: NextRequest) {
     let startDate: Date;
     let endDate: Date;
 
-    switch (timeFilter) {
-      case "today":
-        startDate = new Date(today);
-        endDate = new Date(today);
-        endDate.setDate(endDate.getDate() + 1);
-        break;
-      case "yesterday":
-        startDate = new Date(today);
-        startDate.setDate(startDate.getDate() - 1);
-        endDate = new Date(today);
-        break;
-      case "week":
-        startDate = new Date(today);
-        startDate.setDate(startDate.getDate() - 7);
-        endDate = new Date(today);
-        endDate.setDate(endDate.getDate() + 1);
-        break;
-      case "month":
-        startDate = new Date(today);
-        startDate.setMonth(startDate.getMonth() - 1);
-        endDate = new Date(today);
-        endDate.setDate(endDate.getDate() + 1);
-        break;
-      case "year":
-        startDate = new Date(today);
-        startDate.setFullYear(startDate.getFullYear() - 1);
-        endDate = new Date(today);
-        endDate.setDate(endDate.getDate() + 1);
-        break;
-      default:
-        startDate = new Date(0); // All time
-        endDate = new Date();
+    console.log("timeFilter", timeFilter);
+
+    if (timeFilter === "custom" && startParam && endParam) {
+      // Handle custom date range (from client)
+      startDate = new Date(startParam);
+      endDate = new Date(endParam);
+      endDate.setDate(endDate.getDate() + 1); // include end date fully
+    } else {
+      // Handle predefined filters
+      switch (timeFilter) {
+        case "today":
+          startDate = new Date(today);
+          endDate = new Date(today);
+          endDate.setDate(endDate.getDate() + 1);
+          break;
+        case "yesterday":
+          startDate = new Date(today);
+          startDate.setDate(startDate.getDate() - 1);
+          endDate = new Date(today);
+          break;
+        case "week":
+          startDate = new Date(today);
+          startDate.setDate(startDate.getDate() - 7);
+          endDate = new Date(today);
+          endDate.setDate(endDate.getDate() + 1);
+          break;
+        case "month":
+          startDate = new Date(today);
+          startDate.setMonth(startDate.getMonth() - 1);
+          endDate = new Date(today);
+          endDate.setDate(endDate.getDate() + 1);
+          break;
+        case "year":
+          startDate = new Date(today);
+          startDate.setFullYear(startDate.getFullYear() - 1);
+          endDate = new Date(today);
+          endDate.setDate(endDate.getDate() + 1);
+          break;
+        default:
+          startDate = new Date(0); // All time
+          endDate = new Date();
+      }
     }
 
     // Build the query for sales by category
