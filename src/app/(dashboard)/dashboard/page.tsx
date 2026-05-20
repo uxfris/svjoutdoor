@@ -12,6 +12,10 @@ import {
   TagIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
+  ArrowTrendingUpIcon,
+  BuildingStorefrontIcon,
+  BanknotesIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
@@ -24,6 +28,14 @@ const SaleDetailsDrawer = dynamic(
     })),
   { ssr: false }
 );
+
+const CASHIER_TIME_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: "today", label: "Today" },
+  { value: "yesterday", label: "Yesterday" },
+  { value: "week", label: "Weekly" },
+  { value: "month", label: "Monthly" },
+  { value: "all", label: "All time" },
+];
 
 interface SaleDetail {
   id_penjualan: number;
@@ -873,7 +885,7 @@ export default function DashboardPage() {
         {
           name: "Total Penjualan",
           value: stats.totalSales,
-          icon: CurrencyDollarIcon,
+          icon: ArrowTrendingUpIcon,
           color: "bg-gradient-to-br from-emerald-500 to-emerald-600",
           paymentBreakdown: undefined,
           isFullWidth: false,
@@ -929,40 +941,60 @@ export default function DashboardPage() {
 
   return (
     <div className="p-8">
-      {/* Welcome Section */}
+      {/* Welcome Section + admin hero stats */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">
-              {isAdmin ? "Selamat datang kembali!" : "Selamat siang!"}
-            </h1>
-            <p className="text-lg text-slate-600">
-              {isAdmin
-                ? "Inilah yang terjadi dengan bisnis Anda hari ini"
-                : "Inilah performa penjualan dan transaksi terbaru Anda"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="space-y-6 mb-8">
         {isAdmin ? (
-          // Admin layout - 2 columns
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {statsArray.map((stat) => (
-              <StatsCard
-                key={stat.name}
-                name={stat.name}
-                value={stat.value}
-                icon={stat.icon}
-                color={stat.color}
-                paymentBreakdown={stat.paymentBreakdown}
-                isFullWidth={stat.isFullWidth}
-              />
-            ))}
+          <div className="relative overflow-hidden rounded-2xl bg-[#2563eb] px-6 py-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] md:px-7 md:py-7">
+            <div
+              className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full bg-sky-200/25 opacity-90 blur-3xl"
+              aria-hidden
+            />
+            <div
+              className="pointer-events-none absolute bottom-0 right-[5%] h-56 w-56 rounded-full bg-white/15 opacity-40 blur-2xl"
+              aria-hidden
+            />
+            <div className="relative z-10 flex flex-col gap-5 md:gap-6">
+              <div className="flex flex-col gap-1">
+                <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+                  Selamat datang kembali!
+                </h1>
+                <p className="text-sm font-medium text-[#b4c5ff] md:text-base">
+                  Inilah yang terjadi dengan bisnis Anda hari ini.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
+                {statsArray.map((stat) => (
+                  <StatsCard
+                    key={stat.name}
+                    variant="adminHero"
+                    name={stat.name}
+                    value={stat.value}
+                    icon={stat.icon}
+                    color={stat.color}
+                    paymentBreakdown={stat.paymentBreakdown}
+                    isFullWidth={stat.isFullWidth}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="mb-2 text-4xl font-bold text-slate-900">
+                Selamat siang!
+              </h1>
+              <p className="text-lg text-slate-600">
+                Inilah performa penjualan dan transaksi terbaru Anda
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Stats Grid — cashier only; admin stats live in the hero above */}
+      <div className="mb-8 space-y-6">
+        {isAdmin ? null : (
           // Cashier layout - special arrangement
           <>
             {/* Full width Pendapatan Hari Ini card */}
@@ -995,271 +1027,158 @@ export default function DashboardPage() {
 
       {/* Cashier Performance Section - Only for Admin */}
       {isAdmin && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+        <div className="mb-8 flex flex-col gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-0.5">
+              <h2 className="text-xl font-bold text-[#191c1e] md:text-2xl">
                 Performa Kasir
               </h2>
-              <p className="text-slate-600">
-                Performa penjualan dan pendapatan per kasir
+              <p className="text-sm text-[#434655] md:text-base">
+                Pemantauan transaksi real-time per toko.
               </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <select
-                  value={cashierTimeFilter}
-                  onChange={(e) => setCashierTimeFilter(e.target.value)}
+            <div className="flex flex-wrap items-center gap-1 self-stretch rounded-md bg-[#f2f4f6] p-1 sm:self-auto sm:justify-end">
+              {CASHIER_TIME_FILTER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
                   disabled={cashierStatsLoading}
-                  className={`appearance-none px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent text-sm font-medium transition-colors cursor-pointer min-w-[140px] ${
+                  onClick={() => setCashierTimeFilter(opt.value)}
+                  className={`rounded px-3 py-1.5 text-xs font-semibold transition-colors md:text-sm ${
+                    cashierTimeFilter === opt.value
+                      ? "bg-white text-[#004ac6] shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+                      : "text-[#434655] hover:text-slate-900"
+                  } ${
                     cashierStatsLoading
-                      ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                      : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
+                      ? "cursor-not-allowed opacity-50"
+                      : "cursor-pointer"
                   }`}
                 >
-                  <option value="today">Today</option>
-                  <option value="yesterday">Yesterday</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                  <option value="all">All Time</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  {cashierStatsLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-600"></div>
-                  ) : (
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  )}
-                </div>
-              </div>
+                  {opt.label}
+                </button>
+              ))}
+              {cashierStatsLoading ? (
+                <span
+                  className="ml-1 inline-flex items-center px-1"
+                  aria-hidden
+                >
+                  <span className="size-4 animate-spin rounded-full border-2 border-slate-300 border-t-[#004ac6]" />
+                </span>
+              ) : null}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
             {cashierStatsLoading ? (
-              // Loading skeleton for cashier cards
               <>
-                <div className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 animate-pulse">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center">
-                      <div className="w-14 h-14 bg-gray-200 rounded-2xl mr-4"></div>
-                      <div>
-                        <div className="h-6 bg-gray-200 rounded w-24 mb-2"></div>
-                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                {[0, 1].map((i) => (
+                  <div
+                    key={i}
+                    className="overflow-hidden rounded-2xl bg-white p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+                  >
+                    <div className="animate-pulse space-y-4 rounded-[11px] bg-[#f2f4f6] p-5">
+                      <div className="flex items-start gap-3">
+                        <div className="size-10 rounded-lg bg-slate-300/80" />
+                        <div className="flex-1 space-y-2 pt-1">
+                          <div className="h-4 w-28 rounded bg-slate-300/80" />
+                          <div className="h-3 w-16 rounded bg-slate-300/60" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="h-20 rounded-lg bg-white shadow-sm" />
+                        <div className="h-20 rounded-lg bg-slate-300/40" />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="h-3 w-32 rounded bg-slate-300/60" />
+                        <div className="h-11 rounded-md bg-white" />
+                        <div className="h-11 rounded-md bg-white" />
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-5">
-                    <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                        <div className="h-4 bg-gray-200 rounded w-20"></div>
-                      </div>
-                      <div className="h-6 bg-gray-200 rounded w-12"></div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="h-3 bg-gray-200 rounded w-32 mb-3"></div>
-                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-12"></div>
-                        </div>
-                        <div className="h-5 bg-gray-200 rounded w-20"></div>
-                      </div>
-                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-12"></div>
-                        </div>
-                        <div className="h-5 bg-gray-200 rounded w-20"></div>
-                      </div>
-                    </div>
-                    <div className="border-t border-gray-200 pt-5">
-                      <div className="flex justify-between items-center p-5 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
-                        </div>
-                        <div className="h-6 bg-gray-200 rounded w-24"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 animate-pulse">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center">
-                      <div className="w-14 h-14 bg-gray-200 rounded-2xl mr-4"></div>
-                      <div>
-                        <div className="h-6 bg-gray-200 rounded w-24 mb-2"></div>
-                        <div className="h-4 bg-gray-200 rounded w-16"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-5">
-                    <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                        <div className="h-4 bg-gray-200 rounded w-20"></div>
-                      </div>
-                      <div className="h-6 bg-gray-200 rounded w-12"></div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="h-3 bg-gray-200 rounded w-32 mb-3"></div>
-                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-12"></div>
-                        </div>
-                        <div className="h-5 bg-gray-200 rounded w-20"></div>
-                      </div>
-                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-12"></div>
-                        </div>
-                        <div className="h-5 bg-gray-200 rounded w-20"></div>
-                      </div>
-                    </div>
-                    <div className="border-t border-gray-200 pt-5">
-                      <div className="flex justify-between items-center p-5 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
-                        </div>
-                        <div className="h-6 bg-gray-200 rounded w-24"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </>
             ) : (
-              Object.entries(cashierStats).map(([cashierId, data]) => (
+              Object.entries(cashierStats).map(([cashierId, data], index) => (
                 <div
                   key={cashierId}
-                  className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+                  className="overflow-hidden rounded-2xl bg-white p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
                 >
-                  {/* Header Section */}
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center">
-                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                        <span className="text-xl font-bold text-white">
-                          {data.name.charAt(0).toUpperCase()}
-                        </span>
+                  <div className="flex flex-col gap-4 rounded-[11px] bg-[#f2f4f6] p-4 md:gap-5 md:p-5">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`relative flex size-10 shrink-0 items-center justify-center rounded-lg shadow-md ${
+                          index % 2 === 0
+                            ? "bg-gradient-to-br from-emerald-900 to-emerald-300"
+                            : "bg-gradient-to-br from-indigo-800 to-indigo-400"
+                        }`}
+                      >
+                        <BuildingStorefrontIcon
+                          className="size-5 text-white"
+                          aria-hidden
+                        />
                       </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-base font-bold text-[#191c1e] md:text-lg">
                           {data.name}
                         </h3>
-                        <p className="text-sm text-gray-500 font-medium">
+                        <p className="text-xs font-medium text-[#434655] md:text-sm">
                           Kasir
                         </p>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Metrics Section */}
-                  <div className="space-y-5">
-                    {/* Total Sales */}
-                    <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                          <CurrencyDollarIcon className="w-4 h-4 text-green-600" />
-                        </div>
-                        <span className="text-sm font-semibold text-gray-700">
+                    <div className="grid grid-cols-2 gap-2 md:gap-3">
+                      <div className="flex flex-col gap-0.5 rounded-lg bg-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-[#434655] md:text-xs">
                           Total Penjualan
                         </span>
-                      </div>
-                      <span className="text-xl font-bold text-green-600">
-                        {data.totalSales}
-                      </span>
-                    </div>
-
-                    {/* Payment Methods Section */}
-                    <div className="space-y-3">
-                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                        Rincian Pembayaran
-                      </h4>
-
-                      {/* Cash */}
-                      <div className="flex justify-between items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center mr-3">
-                            <svg
-                              className="w-4 h-4 text-green-700"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                              />
-                            </svg>
-                          </div>
-                          <span className="text-sm font-semibold text-gray-700">
-                            Tunai
-                          </span>
-                        </div>
-                        <span className="text-lg font-bold text-green-600">
-                          Rp {data.totalCash.toLocaleString()}
+                        <span className="text-xl font-extrabold text-[#191c1e] md:text-2xl">
+                          {data.totalSales}
                         </span>
                       </div>
-
-                      {/* Debit */}
-                      <div className="flex justify-between items-center p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center mr-3">
-                            <svg
-                              className="w-4 h-4 text-purple-700"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                              />
-                            </svg>
-                          </div>
-                          <span className="text-sm font-semibold text-gray-700">
-                            Debit
-                          </span>
-                        </div>
-                        <span className="text-lg font-bold text-purple-600">
-                          Rp {data.totalDebit.toLocaleString()}
+                      <div className="flex flex-col gap-0.5 rounded-lg border border-[rgba(0,74,198,0.08)] bg-[rgba(0,74,198,0.05)] px-3 py-3">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-[#004ac6] md:text-xs">
+                          Pendapatan Total
                         </span>
-                      </div>
-                    </div>
-
-                    {/* Total Revenue - Separated with visual divider */}
-                    <div className="border-t border-gray-200 pt-5">
-                      <div className="flex justify-between items-center p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center mr-3">
-                            <CurrencyDollarIcon className="w-4 h-4 text-blue-700" />
-                          </div>
-                          <span className="text-sm font-bold text-gray-800">
-                            Total Pendapatan
-                          </span>
-                        </div>
-                        <span className="text-xl font-bold text-blue-700">
+                        <span className="text-base font-extrabold leading-tight text-[#004ac6] md:text-lg">
                           Rp {data.totalRevenue.toLocaleString()}
                         </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                      <p className="px-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#434655]">
+                        Rincian Pembayaran
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between rounded-md border border-[rgba(195,198,215,0.35)] bg-white px-3.5 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <BanknotesIcon
+                              className="size-5 shrink-0 text-[#191c1e]"
+                              aria-hidden
+                            />
+                            <span className="text-sm font-semibold text-[#191c1e]">
+                              Tunai
+                            </span>
+                          </div>
+                          <span className="text-sm font-semibold text-[#191c1e]">
+                            Rp {data.totalCash.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between rounded-md border border-[rgba(195,198,215,0.35)] bg-white px-3.5 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <CreditCardIcon
+                              className="size-5 shrink-0 text-[#191c1e]"
+                              aria-hidden
+                            />
+                            <span className="text-sm font-semibold text-[#191c1e]">
+                              Debit
+                            </span>
+                          </div>
+                          <span className="text-sm font-semibold text-[#191c1e]">
+                            Rp {data.totalDebit.toLocaleString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1269,14 +1188,14 @@ export default function DashboardPage() {
           </div>
 
           {!cashierStatsLoading && Object.keys(cashierStats).length === 0 && (
-            <div className="text-center py-12 bg-gray-50 rounded-xl">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserGroupIcon className="w-8 h-8 text-gray-400" />
+            <div className="rounded-xl bg-[#f2f4f6] py-12 text-center">
+              <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-white shadow-sm">
+                <UserGroupIcon className="size-8 text-slate-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="mb-2 text-lg font-semibold text-[#191c1e]">
                 Tidak ada data kasir tersedia
               </h3>
-              <p className="text-gray-600">
+              <p className="text-[#434655]">
                 Tidak ada data penjualan ditemukan untuk periode waktu yang
                 dipilih
               </p>

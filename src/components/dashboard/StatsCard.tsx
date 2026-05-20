@@ -1,18 +1,21 @@
 "use client";
 
-import { memo } from "react";
-import { LucideIcon } from "lucide-react";
+import { memo, type ComponentType, type SVGProps } from "react";
+
+type StatIcon = ComponentType<SVGProps<SVGSVGElement>>;
 
 interface StatsCardProps {
   name: string;
   value: number | string;
-  icon: LucideIcon;
+  icon: StatIcon;
   color: string;
   paymentBreakdown?: {
     cash: number;
     debit: number;
   };
   isFullWidth?: boolean;
+  /** Admin dashboard hero tiles — frosted tiles inside the blue welcome banner */
+  variant?: "default" | "adminHero";
 }
 
 export const StatsCard = memo(function StatsCard({
@@ -22,7 +25,28 @@ export const StatsCard = memo(function StatsCard({
   color,
   paymentBreakdown,
   isFullWidth = false,
+  variant = "default",
 }: StatsCardProps) {
+  if (variant === "adminHero") {
+    return (
+      <div className="rounded-xl border border-white/10 bg-white/10 p-4 shadow-none backdrop-blur-sm md:p-3.5">
+        <div className="flex w-full items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#b4c5ff] md:text-xs">
+              {name}
+            </p>
+            <p className="mt-0.5 truncate text-2xl font-extrabold tracking-tight text-white md:text-3xl">
+              {typeof value === "number" ? value.toLocaleString() : value}
+            </p>
+          </div>
+          <div className="shrink-0 rounded-lg bg-white/20 p-2 md:p-2.5">
+            <Icon className="size-5 text-white md:size-6" aria-hidden />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`group relative overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02] ${
