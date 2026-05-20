@@ -140,7 +140,6 @@ export default function DashboardPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<SaleDetail | null>(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
-  const [loadingSaleId, setLoadingSaleId] = useState<number | null>(null);
 
   // Print states
   const [printingSaleId, setPrintingSaleId] = useState<number | null>(null);
@@ -751,7 +750,6 @@ export default function DashboardPage() {
   }, []);
 
   const fetchSaleDetails = useCallback(async (saleId: number) => {
-    setLoadingSaleId(saleId);
     setDrawerLoading(true);
     setIsDrawerOpen(true);
     try {
@@ -854,7 +852,6 @@ export default function DashboardPage() {
     setIsDrawerOpen(false);
     setSelectedSale(null);
     setDrawerLoading(false);
-    setLoadingSaleId(null);
   }, []);
 
   const handlePrintReceipt = useCallback(
@@ -1355,7 +1352,6 @@ export default function DashboardPage() {
         onClearFilters={clearFilters}
         onSaleClick={fetchSaleDetails}
         onPrintReceipt={handlePrintReceipt}
-        loadingSaleId={loadingSaleId}
         printingSaleId={printingSaleId}
         isAdmin={isAdmin}
       />

@@ -31,7 +31,6 @@ interface RecentSalesTableProps {
   onClearFilters: () => void;
   onSaleClick: (saleId: number) => void;
   onPrintReceipt: (saleId: number) => void;
-  loadingSaleId: number | null;
   printingSaleId: number | null;
   isAdmin: boolean;
 }
@@ -56,7 +55,6 @@ export const RecentSalesTable = memo(function RecentSalesTable({
   onClearFilters,
   onSaleClick,
   onPrintReceipt,
-  loadingSaleId,
   printingSaleId,
   isAdmin,
 }: RecentSalesTableProps) {
@@ -356,21 +354,9 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                 <td className="px-8 py-4 whitespace-nowrap">
                   <button
                     onClick={() => onSaleClick(sale.id_penjualan)}
-                    disabled={loadingSaleId === sale.id_penjualan}
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                      loadingSaleId === sale.id_penjualan
-                        ? "bg-[var(--framer-color-border)] text-[var(--framer-color-text-secondary)] cursor-not-allowed"
-                        : "bg-[var(--framer-color-success-bg)] text-[var(--framer-color-success)] hover:bg-[var(--framer-color-success)] hover:text-white cursor-pointer"
-                    }`}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors bg-[var(--framer-color-success-bg)] text-[var(--framer-color-success)] hover:bg-[var(--framer-color-success)] hover:text-white cursor-pointer"
                   >
-                    {loadingSaleId === sale.id_penjualan ? (
-                      <>
-                        <div className="animate-spin rounded-full h-3 w-3 border-b border-[var(--framer-color-text-secondary)] mr-2"></div>
-                        Loading...
-                      </>
-                    ) : (
-                      `${sale.total_item} items`
-                    )}
+                    {sale.total_item} items
                   </button>
                 </td>
                 <td className="px-8 py-4 whitespace-nowrap">
