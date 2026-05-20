@@ -40,3 +40,6 @@ env.template
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+DEMO_SCRIPT.md
