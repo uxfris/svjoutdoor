@@ -31,6 +31,7 @@ export interface Database {
           level: number; // 1 = Admin, 2 = Cashier
           created_at: string;
           updated_at: string;
+          last_heartbeat_at: string | null;
         };
         Insert: {
           id?: string;
@@ -39,6 +40,7 @@ export interface Database {
           level: number;
           created_at?: string;
           updated_at?: string;
+          last_heartbeat_at?: string | null;
         };
         Update: {
           id?: string;
@@ -47,6 +49,7 @@ export interface Database {
           level?: number;
           created_at?: string;
           updated_at?: string;
+          last_heartbeat_at?: string | null;
         };
       };
       kategori: {

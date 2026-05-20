@@ -9,6 +9,11 @@ import { LazyWrapper } from "@/components/ui/LazyWrapper";
 import { RecentSale } from "@/lib/database.types";
 import { PrintService, PrintReceiptData } from "@/lib/print-service";
 import {
+  presenceFromHeartbeat,
+  ADMIN_PRESENCE_POLL_MS,
+  type CashierPresence,
+} from "@/lib/cashier-presence";
+import {
   TagIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
@@ -37,6 +42,28 @@ const CASHIER_TIME_FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: "month", label: "Monthly" },
   { value: "all", label: "All time" },
 ];
+
+function cashierPresenceBadgeClass(presence: CashierPresence) {
+  switch (presence) {
+    case "online":
+      return "bg-[#6cf8bb] text-[#00714d]";
+    case "active":
+      return "bg-[#e6e8ea] text-[#434655]";
+    default:
+      return "bg-slate-200 text-slate-600";
+  }
+}
+
+function cashierPresenceLabel(presence: CashierPresence) {
+  switch (presence) {
+    case "online":
+      return "Online";
+    case "active":
+      return "Active";
+    default:
+      return "Offline";
+  }
+}
 
 interface SaleDetail {
   id_penjualan: number;
@@ -93,6 +120,7 @@ export default function DashboardPage() {
       totalRevenue: number;
       totalCash: number;
       totalDebit: number;
+      presence: CashierPresence;
     };
   }>({});
   const [cashierStatsLoading, setCashierStatsLoading] = useState(false);
@@ -365,7 +393,7 @@ export default function DashboardPage() {
       // Get only cashier users (level 2), exclude admins (level 1)
       const { data: usersData, error: usersError } = await supabase
         .from("users")
-        .select("id, name, level")
+        .select("id, name, level, last_heartbeat_at")
         .eq("level", 2); // Only get cashiers, not admins
 
       if (usersError) {
@@ -385,48 +413,59 @@ export default function DashboardPage() {
           totalRevenue: number;
           totalCash: number;
           totalDebit: number;
+          presence: CashierPresence;
         };
       } = {};
 
-      usersData.forEach((user) => {
-        const userSales = salesData.filter((sale) => sale.id_user === user.id);
-        const cashSales = userSales.filter(
-          (sale) => sale.payment_method === "cash",
-        );
-        const debitSales = userSales.filter(
-          (sale) => sale.payment_method === "debit",
-        );
-
-        // Calculate totals
-        const totalRevenue = userSales.reduce(
-          (sum, sale) => sum + sale.total_harga,
-          0,
-        );
-        const totalCash = cashSales.reduce(
-          (sum, sale) => sum + sale.total_harga,
-          0,
-        );
-        const totalDebit = debitSales.reduce(
-          (sum, sale) => sum + sale.total_harga,
-          0,
-        );
-
-        // Validate data consistency (cash + debit should equal total revenue)
-        const calculatedTotal = totalCash + totalDebit;
-        if (Math.abs(totalRevenue - calculatedTotal) > 1) {
-          console.warn(
-            `Revenue mismatch for cashier ${user.name}: Total=${totalRevenue}, Cash+Debit=${calculatedTotal}`,
+      usersData.forEach(
+        (user: {
+          id: string;
+          name: string;
+          level: number;
+          last_heartbeat_at: string | null;
+        }) => {
+          const userSales = salesData.filter(
+            (sale) => sale.id_user === user.id,
           );
-        }
+          const cashSales = userSales.filter(
+            (sale) => sale.payment_method === "cash",
+          );
+          const debitSales = userSales.filter(
+            (sale) => sale.payment_method === "debit",
+          );
 
-        stats[user.id] = {
-          name: user.name,
-          totalSales: userSales.length,
-          totalRevenue,
-          totalCash,
-          totalDebit,
-        };
-      });
+          // Calculate totals
+          const totalRevenue = userSales.reduce(
+            (sum, sale) => sum + sale.total_harga,
+            0,
+          );
+          const totalCash = cashSales.reduce(
+            (sum, sale) => sum + sale.total_harga,
+            0,
+          );
+          const totalDebit = debitSales.reduce(
+            (sum, sale) => sum + sale.total_harga,
+            0,
+          );
+
+          // Validate data consistency (cash + debit should equal total revenue)
+          const calculatedTotal = totalCash + totalDebit;
+          if (Math.abs(totalRevenue - calculatedTotal) > 1) {
+            console.warn(
+              `Revenue mismatch for cashier ${user.name}: Total=${totalRevenue}, Cash+Debit=${calculatedTotal}`,
+            );
+          }
+
+          stats[user.id] = {
+            name: user.name,
+            totalSales: userSales.length,
+            totalRevenue,
+            totalCash,
+            totalDebit,
+            presence: presenceFromHeartbeat(user.last_heartbeat_at),
+          };
+        },
+      );
 
       return stats;
     },
@@ -552,6 +591,47 @@ export default function DashboardPage() {
         });
     }
   }, [cashierTimeFilter, isAdmin, fetchCashierStats]);
+
+  // Poll cashier heartbeats so admin sees Online / Active without waiting for stats cache TTL
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const supabase = createClient();
+    let cancelled = false;
+
+    const pollPresence = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, last_heartbeat_at")
+        .eq("level", 2);
+      if (cancelled || error || !data?.length) return;
+
+      setCashierStats((prev) => {
+        if (Object.keys(prev).length === 0) return prev;
+        const next = { ...prev };
+        let changed = false;
+        for (const row of data) {
+          if (!next[row.id]) continue;
+          const presence = presenceFromHeartbeat(row.last_heartbeat_at);
+          if (next[row.id].presence !== presence) {
+            next[row.id] = { ...next[row.id], presence };
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    };
+
+    void pollPresence();
+    const intervalId = window.setInterval(
+      () => void pollPresence(),
+      ADMIN_PRESENCE_POLL_MS,
+    );
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [isAdmin]);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -1078,12 +1158,15 @@ export default function DashboardPage() {
                     className="overflow-hidden rounded-2xl bg-white p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
                   >
                     <div className="animate-pulse space-y-4 rounded-[11px] bg-[#f2f4f6] p-5">
-                      <div className="flex items-start gap-3">
-                        <div className="size-10 rounded-lg bg-slate-300/80" />
-                        <div className="flex-1 space-y-2 pt-1">
-                          <div className="h-4 w-28 rounded bg-slate-300/80" />
-                          <div className="h-3 w-16 rounded bg-slate-300/60" />
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex flex-1 items-start gap-3">
+                          <div className="size-10 rounded-lg bg-slate-300/80" />
+                          <div className="flex-1 space-y-2 pt-1">
+                            <div className="h-4 w-28 rounded bg-slate-300/80" />
+                            <div className="h-3 w-16 rounded bg-slate-300/60" />
+                          </div>
                         </div>
+                        <div className="h-6 w-14 shrink-0 rounded-md bg-slate-300/70" />
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="h-20 rounded-lg bg-white shadow-sm" />
@@ -1105,27 +1188,34 @@ export default function DashboardPage() {
                   className="overflow-hidden rounded-4xl p-0.5 border-4 border-white"
                 >
                   <div className="flex flex-col gap-4 rounded-[11px] bg-[#f2f4f6] p-4 md:gap-5 md:p-8">
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`relative flex size-10 shrink-0 items-center justify-center rounded-lg shadow-md ${
-                          index % 2 === 0
-                            ? "bg-gradient-to-br from-emerald-900 to-emerald-300"
-                            : "bg-gradient-to-br from-indigo-800 to-indigo-400"
-                        }`}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 flex-1 items-start gap-3">
+                        <div
+                          className={`relative flex size-10 shrink-0 items-center justify-center rounded-lg shadow-md ${
+                            index % 2 === 0
+                              ? "bg-gradient-to-br from-emerald-900 to-emerald-300"
+                              : "bg-gradient-to-br from-indigo-800 to-indigo-400"
+                          }`}
+                        >
+                          <BuildingStorefrontIcon
+                            className="size-5 text-white"
+                            aria-hidden
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-base font-bold text-[#191c1e] md:text-lg">
+                            {data.name}
+                          </h3>
+                          <p className="text-xs font-medium text-[#434655] md:text-sm">
+                            Kasir
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-lg px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide md:text-sm ${cashierPresenceBadgeClass(data.presence)}`}
                       >
-                        <BuildingStorefrontIcon
-                          className="size-5 text-white"
-                          aria-hidden
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-base font-bold text-[#191c1e] md:text-lg">
-                          {data.name}
-                        </h3>
-                        <p className="text-xs font-medium text-[#434655] md:text-sm">
-                          Kasir
-                        </p>
-                      </div>
+                        {cashierPresenceLabel(data.presence)}
+                      </span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 md:gap-3">
