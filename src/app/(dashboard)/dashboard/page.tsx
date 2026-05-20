@@ -1060,49 +1060,52 @@ export default function DashboardPage() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="mb-2 text-4xl font-bold text-slate-900">
-                Selamat siang!
-              </h1>
-              <p className="text-lg text-slate-600">
-                Inilah performa penjualan dan transaksi terbaru Anda
-              </p>
+          <div className="relative overflow-hidden rounded-2xl bg-[#2563eb] px-6 py-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] md:px-7 md:py-10">
+            <div className="absolute -right-80 opacity-20">
+              <Image
+                src="/welcome-background.png"
+                alt=""
+                width={600}
+                height={600}
+              />
+            </div>
+            <div className="relative z-10 flex flex-col gap-5 md:gap-12">
+              <div className="flex flex-col gap-1">
+                <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+                  Selamat siang!
+                </h1>
+                <p className="text-sm font-medium text-[#b4c5ff] md:text-base">
+                  Inilah performa penjualan dan transaksi terbaru Anda.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 md:gap-4">
+                <StatsCard
+                  key={statsArray[0].name}
+                  variant="adminHero"
+                  name={statsArray[0].name}
+                  value={statsArray[0].value}
+                  icon={statsArray[0].icon}
+                  color={statsArray[0].color}
+                  paymentBreakdown={statsArray[0].paymentBreakdown}
+                  isFullWidth={statsArray[0].isFullWidth}
+                />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
+                  {statsArray.slice(1).map((stat) => (
+                    <StatsCard
+                      key={stat.name}
+                      variant="adminHero"
+                      name={stat.name}
+                      value={stat.value}
+                      icon={stat.icon}
+                      color={stat.color}
+                      paymentBreakdown={stat.paymentBreakdown}
+                      isFullWidth={stat.isFullWidth}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Stats Grid — cashier only; admin stats live in the hero above */}
-      <div className="mb-12 space-y-6">
-        {isAdmin ? null : (
-          // Cashier layout - special arrangement
-          <>
-            {/* Full width Pendapatan Hari Ini card */}
-            <StatsCard
-              key={statsArray[0].name}
-              name={statsArray[0].name}
-              value={statsArray[0].value}
-              icon={statsArray[0].icon}
-              color={statsArray[0].color}
-              paymentBreakdown={statsArray[0].paymentBreakdown}
-              isFullWidth={statsArray[0].isFullWidth}
-            />
-            {/* Two column layout for other cards */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {statsArray.slice(1).map((stat) => (
-                <StatsCard
-                  key={stat.name}
-                  name={stat.name}
-                  value={stat.value}
-                  icon={stat.icon}
-                  color={stat.color}
-                  paymentBreakdown={stat.paymentBreakdown}
-                  isFullWidth={stat.isFullWidth}
-                />
-              ))}
-            </div>
-          </>
         )}
       </div>
 
