@@ -48,6 +48,9 @@ export async function GET(request: NextRequest) {
         id_penjualan,
         total_item,
         total_harga,
+        diskon,
+        discount_type,
+        bayar,
         created_at,
         id_user,
         users:users!id_user(name, level)

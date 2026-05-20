@@ -5,11 +5,15 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import { getNetSaleAmount } from "@/lib/discount";
 
 interface Sale {
   id_penjualan: number;
   total_item: number;
   total_harga: number;
+  diskon?: number;
+  discount_type?: "percentage" | "amount";
+  bayar?: number;
   payment_method: string;
   id_user: string;
   created_at: string;
@@ -176,7 +180,7 @@ export default function SalesPage() {
   const handleDeleteClick = (sale: Sale) => {
     const saleInfo = `Sale #${sale.id_penjualan} - ${
       sale.member?.nama || "Walk-in Customer"
-    } - Rp ${sale.total_harga.toLocaleString()}`;
+    } - Rp ${getNetSaleAmount(sale).toLocaleString()}`;
     setDeleteDialog({
       isOpen: true,
       saleId: sale.id_penjualan,
@@ -528,7 +532,7 @@ export default function SalesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-bold text-gray-900">
-                        Rp {sale.total_harga.toLocaleString()}
+                        Rp {getNetSaleAmount(sale).toLocaleString()}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

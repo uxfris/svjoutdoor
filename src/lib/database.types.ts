@@ -11,6 +11,9 @@ export interface RecentSale {
   id_penjualan: number;
   total_item: number;
   total_harga: number;
+  diskon?: number;
+  discount_type?: "percentage" | "amount";
+  bayar?: number;
   created_at: string;
   id_user: string;
   users?: { name: string; level: number } | null;
@@ -31,6 +34,7 @@ export interface Database {
           level: number; // 1 = Admin, 2 = Cashier
           created_at: string;
           updated_at: string;
+          last_heartbeat_at: string | null;
         };
         Insert: {
           id?: string;
@@ -39,6 +43,7 @@ export interface Database {
           level: number;
           created_at?: string;
           updated_at?: string;
+          last_heartbeat_at?: string | null;
         };
         Update: {
           id?: string;
@@ -47,6 +52,7 @@ export interface Database {
           level?: number;
           created_at?: string;
           updated_at?: string;
+          last_heartbeat_at?: string | null;
         };
       };
       kategori: {

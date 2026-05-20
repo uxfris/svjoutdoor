@@ -20,9 +20,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { createClient } from "@/lib/supabase/client";
 import { useLoading } from "./LoadingContext";
+import Image from "next/image";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, level: [1, 2] },
+  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, level: [1] },
+  { name: "Laporan", href: "/dashboard", icon: HomeIcon, level: [2] },
   { name: "Kategori", href: "/categories", icon: TagIcon, level: [1] },
   { name: "Laporan", href: "/reports", icon: DocumentChartBarIcon, level: [1] },
   { name: "Member", href: "/members", icon: UserGroupIcon, level: [1] },
@@ -35,6 +37,8 @@ const navigation = [
   { name: "Pengaturan", href: "/settings", icon: CogIcon, level: [1] },
   { name: "Profil", href: "/profile", icon: UserIcon, level: [1, 2] },
 ];
+
+const CASHIER_NAV_ORDER = ["Kasir", "Laporan", "Profil"];
 
 interface SidebarProps {
   userLevel: number;
@@ -59,7 +63,7 @@ const Sidebar = memo(function Sidebar({ userLevel }: SidebarProps) {
         setIsMobileMenuOpen(false); // Close mobile menu on navigation
       }
     },
-    [pathname, startNavigation]
+    [pathname, startNavigation],
   );
 
   const handlePrefetch = useCallback(
@@ -68,12 +72,17 @@ const Sidebar = memo(function Sidebar({ userLevel }: SidebarProps) {
         router.prefetch(href);
       }
     },
-    [pathname, router]
+    [pathname, router],
   );
 
-  const filteredNavigation = navigation.filter((item) =>
-    item.level.includes(userLevel)
-  );
+  const filteredNavigation = navigation
+    .filter((item) => item.level.includes(userLevel))
+    .sort((a, b) => {
+      if (userLevel !== 2) return 0;
+      return (
+        CASHIER_NAV_ORDER.indexOf(a.name) - CASHIER_NAV_ORDER.indexOf(b.name)
+      );
+    });
 
   return (
     <>
@@ -99,23 +108,29 @@ const Sidebar = memo(function Sidebar({ userLevel }: SidebarProps) {
 
       {/* Sidebar */}
       <div
-        className={`flex flex-col w-72 bg-[var(--framer-color-bg)] border-r border-[var(--framer-color-border)] fixed lg:static inset-y-0 left-0 z-50 transform transition-transform duration-300 ${
+        className={`flex flex-col w-72 bg-[#F8FAFC] border-r border-[var(--framer-color-border)] fixed lg:static inset-y-0 left-0 z-50 transform transition-transform duration-300 ${
           isMobileMenuOpen
             ? "translate-x-0"
             : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Logo Section */}
-        <div className="flex items-center justify-center h-20 px-6 bg-[var(--framer-color-tint)]">
+        <div className="flex items-center justify-center h-20 px-6 ">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white/20 rounded-[var(--framer-radius-md)] flex items-center justify-center">
+            {/* <div className="w-10 h-10 bg-white/20 rounded-[var(--framer-radius-md)] flex items-center justify-center">
               <BuildingStorefrontIcon className="w-6 h-6 text-white" />
-            </div>
+            </div> */}
+            <Image
+              src="/app-logo.png"
+              alt={"SVJ Outdoor"}
+              width={40}
+              height={40}
+            />
             <div>
-              <h1 className="text-xl font-semibold text-[var(--framer-color-tint-text)]">
-                SVJ Outdoor
-              </h1>
-              <p className="text-xs text-white/80">Sistem Kasir</p>
+              <h1 className="text-xl font-semibold text-black">SVJ Outdoor</h1>
+              <p className="text-xs text-black/50 uppercase tracking-wide font-semibold">
+                Manajemen Inventaris
+              </p>
             </div>
           </div>
         </div>
@@ -130,16 +145,16 @@ const Sidebar = memo(function Sidebar({ userLevel }: SidebarProps) {
                 href={item.href}
                 onClick={() => handleNavigation(item.href)}
                 onMouseEnter={() => handlePrefetch(item.href)}
-                className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-[var(--framer-radius-md)] transition-all duration-150 ${
+                className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-[var(--framer-radius-sm)] transition-all duration-150 ${
                   isActive
-                    ? "bg-[var(--framer-color-tint)] text-[var(--framer-color-tint-text)] shadow-sm"
+                    ? "bg-white text-blue-800 shadow-xs"
                     : "text-[var(--framer-color-text-secondary)] hover:bg-[var(--framer-color-surface)] hover:text-[var(--framer-color-text)]"
                 }`}
               >
                 <item.icon
                   className={`w-5 h-5 mr-3 transition-colors ${
                     isActive
-                      ? "text-[var(--framer-color-tint-text)]"
+                      ? "text-blue-800"
                       : "text-[var(--framer-color-text-tertiary)] group-hover:text-[var(--framer-color-text-secondary)]"
                   }`}
                 />

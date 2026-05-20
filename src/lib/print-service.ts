@@ -1,4 +1,8 @@
 import jsPDF from "jspdf";
+import {
+  getItemDiscountAmount,
+  getSaleDiscountAmount,
+} from "@/lib/discount";
 import QRCode from "qrcode";
 import JsBarcode from "jsbarcode";
 
@@ -135,10 +139,7 @@ export class PrintService {
         doc.setFont("helvetica", "normal");
         doc.setTextColor(220, 38, 38); // Red color
         doc.setFontSize(8);
-        const discountAmount =
-          item.discount_type === "percentage"
-            ? (item.harga_jual * item.diskon) / 100
-            : item.diskon;
+        const discountAmount = getItemDiscountAmount(item);
         doc.text(
           `Discount: -Rp ${discountAmount.toLocaleString()}${
             item.discount_type === "percentage" ? ` (${item.diskon}%)` : ""
@@ -164,10 +165,7 @@ export class PrintService {
     doc.text(`Rp ${data.total_harga.toLocaleString()}`, 170, yPosition);
     yPosition += 5;
 
-    const discountAmount =
-      data.discount_type === "percentage"
-        ? (data.total_harga * data.diskon) / 100
-        : data.diskon;
+    const discountAmount = getSaleDiscountAmount(data);
 
     doc.text(
       `Discount: ${
@@ -320,11 +318,7 @@ export class PrintService {
                 ? `
             <tr>
               <td style="padding: 1px 0; font-size: 10px; color: #dc2626;">
-                Discount: -${formatCurrency(
-                  item.discount_type === "percentage"
-                    ? (item.harga_jual * item.diskon) / 100
-                    : item.diskon
-                )}${
+                Discount: -${formatCurrency(getItemDiscountAmount(item))}${
                     item.discount_type === "percentage"
                       ? ` (${item.diskon}%)`
                       : ""
@@ -362,10 +356,7 @@ export class PrintService {
             <td class="right">${
               data.diskon > 0
                 ? data.discount_type === "percentage"
-                  ? `- Rp ${(
-                      (data.total_harga * data.diskon) /
-                      100
-                    ).toLocaleString()} (${data.diskon}%)`
+                  ? `- Rp ${getSaleDiscountAmount(data).toLocaleString()} (${data.diskon}%)`
                   : `- Rp ${data.diskon.toLocaleString()}`
                 : "Rp 0"
             }</td>

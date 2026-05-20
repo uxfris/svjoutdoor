@@ -10,6 +10,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useLoading } from "@/components/layout/LoadingContext";
 import GlobalLoading from "@/components/layout/GlobalLoading";
+import { useCashierHeartbeat } from "@/hooks/useCashierHeartbeat";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -65,6 +66,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  useCashierHeartbeat(Boolean(user && user.level === 2));
 
   // Handle route changes to end loading state
   useEffect(() => {

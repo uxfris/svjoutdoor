@@ -7,14 +7,25 @@ import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
 import { SalesByCategory } from "@/components/dashboard/SalesByCategory";
 import { LazyWrapper } from "@/components/ui/LazyWrapper";
 import { RecentSale } from "@/lib/database.types";
+import { getNetSaleAmount } from "@/lib/discount";
 import { PrintService, PrintReceiptData } from "@/lib/print-service";
+import {
+  presenceFromHeartbeat,
+  ADMIN_PRESENCE_POLL_MS,
+  type CashierPresence,
+} from "@/lib/cashier-presence";
 import {
   TagIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
+  ArrowTrendingUpIcon,
+  BuildingStorefrontIcon,
+  BanknotesIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 
 // Lazy load the drawer component
 const SaleDetailsDrawer = dynamic(
@@ -22,8 +33,38 @@ const SaleDetailsDrawer = dynamic(
     import("@/components/dashboard/SaleDetailsDrawer").then((mod) => ({
       default: mod.SaleDetailsDrawer,
     })),
-  { ssr: false }
+  { ssr: false },
 );
+
+const CASHIER_TIME_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: "today", label: "Today" },
+  { value: "yesterday", label: "Yesterday" },
+  { value: "week", label: "Weekly" },
+  { value: "month", label: "Monthly" },
+  { value: "all", label: "All time" },
+];
+
+function cashierPresenceBadgeClass(presence: CashierPresence) {
+  switch (presence) {
+    case "online":
+      return "bg-[#6cf8bb] text-[#00714d]";
+    case "active":
+      return "bg-[#e6e8ea] text-[#434655]";
+    default:
+      return "bg-slate-200 text-slate-600";
+  }
+}
+
+function cashierPresenceLabel(presence: CashierPresence) {
+  switch (presence) {
+    case "online":
+      return "Online";
+    case "active":
+      return "Active";
+    default:
+      return "Offline";
+  }
+}
 
 interface SaleDetail {
   id_penjualan: number;
@@ -80,6 +121,7 @@ export default function DashboardPage() {
       totalRevenue: number;
       totalCash: number;
       totalDebit: number;
+      presence: CashierPresence;
     };
   }>({});
   const [cashierStatsLoading, setCashierStatsLoading] = useState(false);
@@ -98,7 +140,6 @@ export default function DashboardPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<SaleDetail | null>(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
-  const [loadingSaleId, setLoadingSaleId] = useState<number | null>(null);
 
   // Print states
   const [printingSaleId, setPrintingSaleId] = useState<number | null>(null);
@@ -155,7 +196,7 @@ export default function DashboardPage() {
         const todayStart = new Date(
           today.getFullYear(),
           today.getMonth(),
-          today.getDate()
+          today.getDate(),
         );
         const todayEnd = new Date(todayStart);
         todayEnd.setDate(todayEnd.getDate() + 1);
@@ -167,35 +208,42 @@ export default function DashboardPage() {
               .select("*", { count: "exact", head: true }),
             supabase
               .from("penjualan")
-              .select("total_harga, payment_method", { count: "exact" })
+              .select(
+                "total_harga, diskon, discount_type, bayar, payment_method",
+                { count: "exact" },
+              )
               .eq("id_user", user?.id)
               .gte("created_at", todayStart.toISOString())
               .lt("created_at", todayEnd.toISOString()),
             supabase
               .from("penjualan")
-              .select("total_harga", { count: "exact" })
+              .select("total_harga, diskon, discount_type, bayar", {
+                count: "exact",
+              })
               .eq("id_user", user?.id),
           ]);
 
         const todayRevenue =
           todaySalesResult.data?.reduce(
-            (sum, sale) => sum + sale.total_harga,
-            0
+            (sum, sale) => sum + getNetSaleAmount(sale),
+            0,
           ) || 0;
 
         // Calculate payment method breakdown for today
         const todayCash =
           todaySalesResult.data?.reduce(
             (sum, sale) =>
-              sum + (sale.payment_method === "cash" ? sale.total_harga : 0),
-            0
+              sum +
+              (sale.payment_method === "cash" ? getNetSaleAmount(sale) : 0),
+            0,
           ) || 0;
 
         const todayDebit =
           todaySalesResult.data?.reduce(
             (sum, sale) =>
-              sum + (sale.payment_method === "debit" ? sale.total_harga : 0),
-            0
+              sum +
+              (sale.payment_method === "debit" ? getNetSaleAmount(sale) : 0),
+            0,
           ) || 0;
 
         return {
@@ -210,7 +258,7 @@ export default function DashboardPage() {
         };
       }
     },
-    { ttl: 2 * 60 * 1000 } // 2 minutes cache
+    { ttl: 2 * 60 * 1000 }, // 2 minutes cache
   );
 
   const { fetchData: fetchRecentSales } = useDataCache(
@@ -231,13 +279,16 @@ export default function DashboardPage() {
             id_penjualan,
             total_item,
             total_harga,
+            diskon,
+            discount_type,
+            bayar,
             created_at,
             id_user,
             penjualan_detail(
               id_kategori,
               kategori(nama_kategori)
             )
-          `
+          `,
           )
           .order("created_at", { ascending: false })
           .limit(20);
@@ -284,7 +335,7 @@ export default function DashboardPage() {
         return [];
       }
     },
-    { ttl: 30 * 1000 }
+    { ttl: 30 * 1000 },
   );
 
   const { fetchData: fetchCashierStats } = useDataCache(
@@ -333,7 +384,9 @@ export default function DashboardPage() {
       // Get all sales in the date range
       let query = supabase
         .from("penjualan")
-        .select("id_user, total_harga, payment_method, created_at");
+        .select(
+          "id_user, total_harga, diskon, discount_type, bayar, payment_method, created_at",
+        );
 
       // Only apply date filters if not "all time"
       if (cashierTimeFilter !== "all") {
@@ -352,7 +405,7 @@ export default function DashboardPage() {
       // Get only cashier users (level 2), exclude admins (level 1)
       const { data: usersData, error: usersError } = await supabase
         .from("users")
-        .select("id, name, level")
+        .select("id, name, level, last_heartbeat_at")
         .eq("level", 2); // Only get cashiers, not admins
 
       if (usersError) {
@@ -372,52 +425,63 @@ export default function DashboardPage() {
           totalRevenue: number;
           totalCash: number;
           totalDebit: number;
+          presence: CashierPresence;
         };
       } = {};
 
-      usersData.forEach((user) => {
-        const userSales = salesData.filter((sale) => sale.id_user === user.id);
-        const cashSales = userSales.filter(
-          (sale) => sale.payment_method === "cash"
-        );
-        const debitSales = userSales.filter(
-          (sale) => sale.payment_method === "debit"
-        );
-
-        // Calculate totals
-        const totalRevenue = userSales.reduce(
-          (sum, sale) => sum + sale.total_harga,
-          0
-        );
-        const totalCash = cashSales.reduce(
-          (sum, sale) => sum + sale.total_harga,
-          0
-        );
-        const totalDebit = debitSales.reduce(
-          (sum, sale) => sum + sale.total_harga,
-          0
-        );
-
-        // Validate data consistency (cash + debit should equal total revenue)
-        const calculatedTotal = totalCash + totalDebit;
-        if (Math.abs(totalRevenue - calculatedTotal) > 1) {
-          console.warn(
-            `Revenue mismatch for cashier ${user.name}: Total=${totalRevenue}, Cash+Debit=${calculatedTotal}`
+      usersData.forEach(
+        (user: {
+          id: string;
+          name: string;
+          level: number;
+          last_heartbeat_at: string | null;
+        }) => {
+          const userSales = salesData.filter(
+            (sale) => sale.id_user === user.id,
           );
-        }
+          const cashSales = userSales.filter(
+            (sale) => sale.payment_method === "cash",
+          );
+          const debitSales = userSales.filter(
+            (sale) => sale.payment_method === "debit",
+          );
 
-        stats[user.id] = {
-          name: user.name,
-          totalSales: userSales.length,
-          totalRevenue,
-          totalCash,
-          totalDebit,
-        };
-      });
+          // Calculate totals
+          const totalRevenue = userSales.reduce(
+            (sum, sale) => sum + getNetSaleAmount(sale),
+            0,
+          );
+          const totalCash = cashSales.reduce(
+            (sum, sale) => sum + getNetSaleAmount(sale),
+            0,
+          );
+          const totalDebit = debitSales.reduce(
+            (sum, sale) => sum + getNetSaleAmount(sale),
+            0,
+          );
+
+          // Validate data consistency (cash + debit should equal total revenue)
+          const calculatedTotal = totalCash + totalDebit;
+          if (Math.abs(totalRevenue - calculatedTotal) > 1) {
+            console.warn(
+              `Revenue mismatch for cashier ${user.name}: Total=${totalRevenue}, Cash+Debit=${calculatedTotal}`,
+            );
+          }
+
+          stats[user.id] = {
+            name: user.name,
+            totalSales: userSales.length,
+            totalRevenue,
+            totalCash,
+            totalDebit,
+            presence: presenceFromHeartbeat(user.last_heartbeat_at),
+          };
+        },
+      );
 
       return stats;
     },
-    { ttl: 2 * 60 * 1000 } // 2 minutes cache
+    { ttl: 2 * 60 * 1000 }, // 2 minutes cache
   );
 
   // Memoized filtered sales computation
@@ -432,7 +496,7 @@ export default function DashboardPage() {
           (sale.users?.name || "Unknown")
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          sale.total_harga.toString().includes(searchTerm)
+          getNetSaleAmount(sale).toString().includes(searchTerm),
       );
     }
 
@@ -469,16 +533,17 @@ export default function DashboardPage() {
       });
     }
 
-    // Amount filter
+    // Amount filter (net amount after discount)
     if (amountFilter !== "all") {
       filtered = filtered.filter((sale) => {
+        const netAmount = getNetSaleAmount(sale);
         switch (amountFilter) {
           case "low":
-            return sale.total_harga < 100000; // Less than 100k
+            return netAmount < 100000; // Less than 100k
           case "medium":
-            return sale.total_harga >= 100000 && sale.total_harga < 500000; // 100k - 500k
+            return netAmount >= 100000 && netAmount < 500000; // 100k - 500k
           case "high":
-            return sale.total_harga >= 500000; // More than 500k
+            return netAmount >= 500000; // More than 500k
           default:
             return true;
         }
@@ -492,7 +557,7 @@ export default function DashboardPage() {
           return false;
         }
         return sale.penjualan_detail.some(
-          (detail) => detail.id_kategori.toString() === categoryFilter
+          (detail) => detail.id_kategori.toString() === categoryFilter,
         );
       });
     }
@@ -539,6 +604,47 @@ export default function DashboardPage() {
         });
     }
   }, [cashierTimeFilter, isAdmin, fetchCashierStats]);
+
+  // Poll cashier heartbeats so admin sees Online / Active without waiting for stats cache TTL
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const supabase = createClient();
+    let cancelled = false;
+
+    const pollPresence = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, last_heartbeat_at")
+        .eq("level", 2);
+      if (cancelled || error || !data?.length) return;
+
+      setCashierStats((prev) => {
+        if (Object.keys(prev).length === 0) return prev;
+        const next = { ...prev };
+        let changed = false;
+        for (const row of data) {
+          if (!next[row.id]) continue;
+          const presence = presenceFromHeartbeat(row.last_heartbeat_at);
+          if (next[row.id].presence !== presence) {
+            next[row.id] = { ...next[row.id], presence };
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    };
+
+    void pollPresence();
+    const intervalId = window.setInterval(
+      () => void pollPresence(),
+      ADMIN_PRESENCE_POLL_MS,
+    );
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [isAdmin]);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -590,7 +696,7 @@ export default function DashboardPage() {
           supabase
             .from("setting")
             .select(
-              "nama_perusahaan, alamat, telepon, receipt_width_mm, receipt_font_size, receipt_paper_type, receipt_footer"
+              "nama_perusahaan, alamat, telepon, receipt_width_mm, receipt_font_size, receipt_paper_type, receipt_footer",
             )
             .single(),
         ]);
@@ -644,7 +750,6 @@ export default function DashboardPage() {
   }, []);
 
   const fetchSaleDetails = useCallback(async (saleId: number) => {
-    setLoadingSaleId(saleId);
     setDrawerLoading(true);
     setIsDrawerOpen(true);
     try {
@@ -666,7 +771,7 @@ export default function DashboardPage() {
           created_at,
           id_member,
           id_user
-        `
+        `,
         )
         .eq("id_penjualan", saleId)
         .single();
@@ -706,7 +811,7 @@ export default function DashboardPage() {
           discount_type,
           subtotal,
           kategori(nama_kategori)
-        `
+        `,
         )
         .eq("id_penjualan", saleId);
 
@@ -747,7 +852,6 @@ export default function DashboardPage() {
     setIsDrawerOpen(false);
     setSelectedSale(null);
     setDrawerLoading(false);
-    setLoadingSaleId(null);
   }, []);
 
   const handlePrintReceipt = useCallback(
@@ -771,7 +875,7 @@ export default function DashboardPage() {
           created_at,
           id_member,
           id_user
-        `
+        `,
           )
           .eq("id_penjualan", saleId)
           .single();
@@ -811,7 +915,7 @@ export default function DashboardPage() {
           discount_type,
           subtotal,
           kategori(nama_kategori)
-        `
+        `,
           )
           .eq("id_penjualan", saleId);
 
@@ -855,7 +959,7 @@ export default function DashboardPage() {
         setPrintingSaleId(null);
       }
     },
-    [settings]
+    [settings],
   );
 
   const statsArray = useMemo(() => {
@@ -873,7 +977,7 @@ export default function DashboardPage() {
         {
           name: "Total Penjualan",
           value: stats.totalSales,
-          icon: CurrencyDollarIcon,
+          icon: ArrowTrendingUpIcon,
           color: "bg-gradient-to-br from-emerald-500 to-emerald-600",
           paymentBreakdown: undefined,
           isFullWidth: false,
@@ -928,338 +1032,258 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-8">
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">
-              {isAdmin ? "Selamat datang kembali!" : "Selamat siang!"}
-            </h1>
-            <p className="text-lg text-slate-600">
-              {isAdmin
-                ? "Inilah yang terjadi dengan bisnis Anda hari ini"
-                : "Inilah performa penjualan dan transaksi terbaru Anda"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="space-y-6 mb-8">
+    <div className="p-8 bg-[#F7F9FB]">
+      {/* Welcome Section + admin hero stats */}
+      <div className="mb-12">
         {isAdmin ? (
-          // Admin layout - 2 columns
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {statsArray.map((stat) => (
-              <StatsCard
-                key={stat.name}
-                name={stat.name}
-                value={stat.value}
-                icon={stat.icon}
-                color={stat.color}
-                paymentBreakdown={stat.paymentBreakdown}
-                isFullWidth={stat.isFullWidth}
+          <div className="relative overflow-hidden rounded-2xl bg-[#2563eb] px-6 py-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] md:px-7 md:py-10">
+            <div className="absolute -right-80 opacity-20">
+              <Image
+                src="/welcome-background.png"
+                alt={""}
+                width={600}
+                height={600}
               />
-            ))}
+            </div>
+            <div className="relative z-10 flex flex-col gap-5 md:gap-12">
+              <div className="flex flex-col gap-1">
+                <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+                  Selamat datang kembali!
+                </h1>
+                <p className="text-sm font-medium text-[#b4c5ff] md:text-base">
+                  Inilah yang terjadi dengan bisnis Anda hari ini.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
+                {statsArray.map((stat) => (
+                  <StatsCard
+                    key={stat.name}
+                    variant="adminHero"
+                    name={stat.name}
+                    value={stat.value}
+                    icon={stat.icon}
+                    color={stat.color}
+                    paymentBreakdown={stat.paymentBreakdown}
+                    isFullWidth={stat.isFullWidth}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
-          // Cashier layout - special arrangement
-          <>
-            {/* Full width Pendapatan Hari Ini card */}
-            <StatsCard
-              key={statsArray[0].name}
-              name={statsArray[0].name}
-              value={statsArray[0].value}
-              icon={statsArray[0].icon}
-              color={statsArray[0].color}
-              paymentBreakdown={statsArray[0].paymentBreakdown}
-              isFullWidth={statsArray[0].isFullWidth}
-            />
-            {/* Two column layout for other cards */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {statsArray.slice(1).map((stat) => (
-                <StatsCard
-                  key={stat.name}
-                  name={stat.name}
-                  value={stat.value}
-                  icon={stat.icon}
-                  color={stat.color}
-                  paymentBreakdown={stat.paymentBreakdown}
-                  isFullWidth={stat.isFullWidth}
-                />
-              ))}
+          <div className="relative overflow-hidden rounded-2xl bg-[#2563eb] px-6 py-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] md:px-7 md:py-10">
+            <div className="absolute -right-80 opacity-20">
+              <Image
+                src="/welcome-background.png"
+                alt=""
+                width={600}
+                height={600}
+              />
             </div>
-          </>
+            <div className="relative z-10 flex flex-col gap-5 md:gap-12">
+              <div className="flex flex-col gap-1">
+                <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+                  Selamat siang!
+                </h1>
+                <p className="text-sm font-medium text-[#b4c5ff] md:text-base">
+                  Inilah performa penjualan dan transaksi terbaru Anda.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 md:gap-4">
+                <StatsCard
+                  key={statsArray[0].name}
+                  variant="adminHero"
+                  name={statsArray[0].name}
+                  value={statsArray[0].value}
+                  icon={statsArray[0].icon}
+                  color={statsArray[0].color}
+                  paymentBreakdown={statsArray[0].paymentBreakdown}
+                  isFullWidth={statsArray[0].isFullWidth}
+                />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
+                  {statsArray.slice(1).map((stat) => (
+                    <StatsCard
+                      key={stat.name}
+                      variant="adminHero"
+                      name={stat.name}
+                      value={stat.value}
+                      icon={stat.icon}
+                      color={stat.color}
+                      paymentBreakdown={stat.paymentBreakdown}
+                      isFullWidth={stat.isFullWidth}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
       {/* Cashier Performance Section - Only for Admin */}
       {isAdmin && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+        <div className="mb-12 flex flex-col gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-0.5">
+              <h2 className="text-xl font-bold text-[#191c1e] md:text-2xl">
                 Performa Kasir
               </h2>
-              <p className="text-slate-600">
-                Performa penjualan dan pendapatan per kasir
+              <p className="text-sm text-[#434655] md:text-base">
+                Pemantauan transaksi real-time per toko.
               </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <select
-                  value={cashierTimeFilter}
-                  onChange={(e) => setCashierTimeFilter(e.target.value)}
+            <div className="flex flex-wrap items-center gap-1 self-stretch rounded-md bg-[#f2f4f6] p-1 sm:self-auto sm:justify-end">
+              {CASHIER_TIME_FILTER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
                   disabled={cashierStatsLoading}
-                  className={`appearance-none px-4 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-[var(--framer-color-tint)] focus:border-transparent text-sm font-medium transition-colors cursor-pointer min-w-[140px] ${
+                  onClick={() => setCashierTimeFilter(opt.value)}
+                  className={`rounded px-3 py-1.5 text-xs font-semibold transition-colors md:text-sm ${
+                    cashierTimeFilter === opt.value
+                      ? "bg-white text-[#004ac6] shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+                      : "text-[#434655] hover:text-slate-900"
+                  } ${
                     cashierStatsLoading
-                      ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                      : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
+                      ? "cursor-not-allowed opacity-50"
+                      : "cursor-pointer"
                   }`}
                 >
-                  <option value="today">Today</option>
-                  <option value="yesterday">Yesterday</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                  <option value="all">All Time</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  {cashierStatsLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-600"></div>
-                  ) : (
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  )}
-                </div>
-              </div>
+                  {opt.label}
+                </button>
+              ))}
+              {cashierStatsLoading ? (
+                <span
+                  className="ml-1 inline-flex items-center px-1"
+                  aria-hidden
+                >
+                  <span className="size-4 animate-spin rounded-full border-2 border-slate-300 border-t-[#004ac6]" />
+                </span>
+              ) : null}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
             {cashierStatsLoading ? (
-              // Loading skeleton for cashier cards
               <>
-                <div className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 animate-pulse">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center">
-                      <div className="w-14 h-14 bg-gray-200 rounded-2xl mr-4"></div>
-                      <div>
-                        <div className="h-6 bg-gray-200 rounded w-24 mb-2"></div>
-                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                {[0, 1].map((i) => (
+                  <div
+                    key={i}
+                    className="overflow-hidden rounded-2xl bg-white p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+                  >
+                    <div className="animate-pulse space-y-4 rounded-[11px] bg-[#f2f4f6] p-5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex flex-1 items-start gap-3">
+                          <div className="size-10 rounded-lg bg-slate-300/80" />
+                          <div className="flex-1 space-y-2 pt-1">
+                            <div className="h-4 w-28 rounded bg-slate-300/80" />
+                            <div className="h-3 w-16 rounded bg-slate-300/60" />
+                          </div>
+                        </div>
+                        <div className="h-6 w-14 shrink-0 rounded-md bg-slate-300/70" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="h-20 rounded-lg bg-white shadow-sm" />
+                        <div className="h-20 rounded-lg bg-slate-300/40" />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="h-3 w-32 rounded bg-slate-300/60" />
+                        <div className="h-11 rounded-md bg-white" />
+                        <div className="h-11 rounded-md bg-white" />
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-5">
-                    <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                        <div className="h-4 bg-gray-200 rounded w-20"></div>
-                      </div>
-                      <div className="h-6 bg-gray-200 rounded w-12"></div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="h-3 bg-gray-200 rounded w-32 mb-3"></div>
-                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-12"></div>
-                        </div>
-                        <div className="h-5 bg-gray-200 rounded w-20"></div>
-                      </div>
-                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-12"></div>
-                        </div>
-                        <div className="h-5 bg-gray-200 rounded w-20"></div>
-                      </div>
-                    </div>
-                    <div className="border-t border-gray-200 pt-5">
-                      <div className="flex justify-between items-center p-5 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
-                        </div>
-                        <div className="h-6 bg-gray-200 rounded w-24"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 animate-pulse">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center">
-                      <div className="w-14 h-14 bg-gray-200 rounded-2xl mr-4"></div>
-                      <div>
-                        <div className="h-6 bg-gray-200 rounded w-24 mb-2"></div>
-                        <div className="h-4 bg-gray-200 rounded w-16"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-5">
-                    <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                        <div className="h-4 bg-gray-200 rounded w-20"></div>
-                      </div>
-                      <div className="h-6 bg-gray-200 rounded w-12"></div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="h-3 bg-gray-200 rounded w-32 mb-3"></div>
-                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-12"></div>
-                        </div>
-                        <div className="h-5 bg-gray-200 rounded w-20"></div>
-                      </div>
-                      <div className="flex justify-between items-center p-4 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-12"></div>
-                        </div>
-                        <div className="h-5 bg-gray-200 rounded w-20"></div>
-                      </div>
-                    </div>
-                    <div className="border-t border-gray-200 pt-5">
-                      <div className="flex justify-between items-center p-5 bg-gray-100 rounded-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-lg mr-3"></div>
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
-                        </div>
-                        <div className="h-6 bg-gray-200 rounded w-24"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </>
             ) : (
-              Object.entries(cashierStats).map(([cashierId, data]) => (
+              Object.entries(cashierStats).map(([cashierId, data], index) => (
                 <div
                   key={cashierId}
-                  className="group bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+                  className="overflow-hidden rounded-4xl p-0.5 border-4 border-white"
                 >
-                  {/* Header Section */}
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center">
-                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                        <span className="text-xl font-bold text-white">
-                          {data.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                          {data.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 font-medium">
-                          Kasir
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Metrics Section */}
-                  <div className="space-y-5">
-                    {/* Total Sales */}
-                    <div className="flex justify-between items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                          <CurrencyDollarIcon className="w-4 h-4 text-green-600" />
+                  <div className="flex flex-col gap-4 rounded-[11px] bg-[#f2f4f6] p-4 md:gap-5 md:p-8">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 flex-1 items-start gap-3">
+                        <div
+                          className={`relative flex size-10 shrink-0 items-center justify-center rounded-lg shadow-md ${
+                            index % 2 === 0
+                              ? "bg-gradient-to-br from-emerald-900 to-emerald-300"
+                              : "bg-gradient-to-br from-indigo-800 to-indigo-400"
+                          }`}
+                        >
+                          <BuildingStorefrontIcon
+                            className="size-5 text-white"
+                            aria-hidden
+                          />
                         </div>
-                        <span className="text-sm font-semibold text-gray-700">
-                          Total Penjualan
-                        </span>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-base font-bold text-[#191c1e] md:text-lg">
+                            {data.name}
+                          </h3>
+                          <p className="text-xs font-medium text-[#434655] md:text-sm">
+                            Kasir
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-xl font-bold text-green-600">
-                        {data.totalSales}
+                      <span
+                        className={`shrink-0 rounded-lg px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide md:text-sm ${cashierPresenceBadgeClass(data.presence)}`}
+                      >
+                        {cashierPresenceLabel(data.presence)}
                       </span>
                     </div>
 
-                    {/* Payment Methods Section */}
-                    <div className="space-y-3">
-                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                        Rincian Pembayaran
-                      </h4>
-
-                      {/* Cash */}
-                      <div className="flex justify-between items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center mr-3">
-                            <svg
-                              className="w-4 h-4 text-green-700"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                              />
-                            </svg>
-                          </div>
-                          <span className="text-sm font-semibold text-gray-700">
-                            Tunai
-                          </span>
-                        </div>
-                        <span className="text-lg font-bold text-green-600">
-                          Rp {data.totalCash.toLocaleString()}
+                    <div className="grid grid-cols-2 gap-2 md:gap-3">
+                      <div className="flex flex-col gap-0.5 rounded-xl bg-white px-6 pt-4 pb-10 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-[#434655] md:text-xs">
+                          Total Penjualan
+                        </span>
+                        <span className="text-xl font-extrabold text-[#191c1e] md:text-2xl">
+                          {data.totalSales}
                         </span>
                       </div>
-
-                      {/* Debit */}
-                      <div className="flex justify-between items-center p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center mr-3">
-                            <svg
-                              className="w-4 h-4 text-purple-700"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                              />
-                            </svg>
-                          </div>
-                          <span className="text-sm font-semibold text-gray-700">
-                            Debit
-                          </span>
-                        </div>
-                        <span className="text-lg font-bold text-purple-600">
-                          Rp {data.totalDebit.toLocaleString()}
+                      <div className="flex flex-col gap-0.5 rounded-xl border border-[rgba(0,74,198,0.08)] bg-[rgba(0,74,198,0.05)] px-6 pt-4 pb-6">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-[#004ac6] md:text-xs">
+                          Pendapatan Total
+                        </span>
+                        <span className="text-base font-extrabold leading-tight text-[#004ac6] md:text-2xl">
+                          Rp {data.totalRevenue.toLocaleString()}
                         </span>
                       </div>
                     </div>
 
-                    {/* Total Revenue - Separated with visual divider */}
-                    <div className="border-t border-gray-200 pt-5">
-                      <div className="flex justify-between items-center p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center mr-3">
-                            <CurrencyDollarIcon className="w-4 h-4 text-blue-700" />
+                    <div className="flex flex-col gap-3">
+                      <p className="px-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#434655]">
+                        Rincian Pembayaran
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between rounded-xl border border-white bg-white p-6">
+                          <div className="flex items-center gap-2">
+                            <BanknotesIcon
+                              className="size-5 shrink-0 text-[#191c1e]"
+                              aria-hidden
+                            />
+                            <span className="text-sm font-semibold text-[#191c1e]">
+                              Tunai
+                            </span>
                           </div>
-                          <span className="text-sm font-bold text-gray-800">
-                            Total Pendapatan
+                          <span className="text-sm font-semibold text-[#191c1e]">
+                            Rp {data.totalCash.toLocaleString()}
                           </span>
                         </div>
-                        <span className="text-xl font-bold text-blue-700">
-                          Rp {data.totalRevenue.toLocaleString()}
-                        </span>
+                        <div className="flex items-center justify-between rounded-xl border border-white bg-white p-6">
+                          <div className="flex items-center gap-2">
+                            <CreditCardIcon
+                              className="size-5 shrink-0 text-[#191c1e]"
+                              aria-hidden
+                            />
+                            <span className="text-sm font-semibold text-[#191c1e]">
+                              Debit
+                            </span>
+                          </div>
+                          <span className="text-sm font-semibold text-[#191c1e]">
+                            Rp {data.totalDebit.toLocaleString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1269,14 +1293,14 @@ export default function DashboardPage() {
           </div>
 
           {!cashierStatsLoading && Object.keys(cashierStats).length === 0 && (
-            <div className="text-center py-12 bg-gray-50 rounded-xl">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserGroupIcon className="w-8 h-8 text-gray-400" />
+            <div className="rounded-xl bg-[#f2f4f6] py-12 text-center">
+              <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-white shadow-sm">
+                <UserGroupIcon className="size-8 text-slate-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="mb-2 text-lg font-semibold text-[#191c1e]">
                 Tidak ada data kasir tersedia
               </h3>
-              <p className="text-gray-600">
+              <p className="text-[#434655]">
                 Tidak ada data penjualan ditemukan untuk periode waktu yang
                 dipilih
               </p>
@@ -1328,7 +1352,6 @@ export default function DashboardPage() {
         onClearFilters={clearFilters}
         onSaleClick={fetchSaleDetails}
         onPrintReceipt={handlePrintReceipt}
-        loadingSaleId={loadingSaleId}
         printingSaleId={printingSaleId}
         isAdmin={isAdmin}
       />

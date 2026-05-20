@@ -2,6 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { notFound } from "next/navigation";
+import {
+  getItemDiscountAmount,
+  getNetSaleAmount,
+  getSaleDiscountAmount,
+} from "@/lib/discount";
 
 interface SaleDetailPageProps {
   params: {
@@ -20,11 +25,12 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
       member:member(nama),
       penjualan_detail(
         id_kategori,
+        harga_jual,
         jumlah,
         subtotal,
         diskon,
         discount_type,
-        kategori:kategori(nama_kategori, harga_jual)
+        kategori:kategori(nama_kategori)
       )
     `
     )
@@ -100,10 +106,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                   Discount
                 </label>
                 <p className="text-lg font-semibold text-red-600">
-                  -Rp{" "}
-                  {sale.discount_type === "percentage"
-                    ? ((sale.total_harga * sale.diskon) / 100).toLocaleString()
-                    : sale.diskon.toLocaleString()}
+                  -Rp {getSaleDiscountAmount(sale).toLocaleString()}
                   {sale.discount_type === "percentage" && (
                     <span className="text-sm text-gray-500 ml-1">
                       ({sale.diskon}%)
@@ -117,7 +120,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                 Total Amount
               </label>
               <p className="text-lg font-semibold text-green-600">
-                Rp {sale.total_harga.toLocaleString()}
+                Rp {getNetSaleAmount(sale).toLocaleString()}
               </p>
             </div>
             <div>
@@ -170,18 +173,13 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                       {item.kategori?.nama_kategori}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      Rp {item.kategori?.harga_jual.toLocaleString()}
+                      Rp {item.harga_jual.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {item.diskon > 0 ? (
                         <div className="text-red-600">
                           - Rp{" "}
-                          {item.discount_type === "percentage"
-                            ? (
-                                (item.kategori?.harga_jual * item.diskon) /
-                                100
-                              ).toLocaleString()
-                            : item.diskon.toLocaleString()}
+                          {getItemDiscountAmount(item).toLocaleString()}
                           {item.discount_type === "percentage" && (
                             <span className="text-xs text-gray-500 ml-1">
                               ({item.diskon}%)

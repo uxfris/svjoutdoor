@@ -18,6 +18,7 @@ interface Member {
 }
 import { Select } from "@/components/ui/Select";
 import { useLoading } from "@/components/layout/LoadingContext";
+import { clampDiscountValue } from "@/lib/discount";
 
 interface CartItem {
   id: string; // Unique identifier for each individual item
@@ -105,6 +106,11 @@ export default function POSPage() {
           ? {
               ...item,
               harga_jual: newPrice,
+              discount: clampDiscountValue(
+                newPrice,
+                item.discount,
+                item.discountType
+              ),
             }
           : item
       )
@@ -119,7 +125,11 @@ export default function POSPage() {
         item.id === itemId
           ? {
               ...item,
-              discount: discount,
+              discount: clampDiscountValue(
+                item.harga_jual,
+                discount,
+                item.discountType
+              ),
             }
           : item
       )

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { getNetSaleAmount } from "@/lib/discount";
 
 export async function GET(request: NextRequest) {
   try {
@@ -188,7 +189,7 @@ export async function GET(request: NextRequest) {
       // Get total sales count from penjualan table for validation
       let validationQuery = supabase
         .from("penjualan")
-        .select("id_penjualan, total_harga")
+        .select("id_penjualan, total_harga, diskon, discount_type, bayar")
         .gte("created_at", startDate.toISOString())
         .lt("created_at", endDate.toISOString());
 
@@ -200,7 +201,8 @@ export async function GET(request: NextRequest) {
 
       // Calculate total revenue from penjualan table
       const totalRevenueFromSales =
-        validationData?.reduce((sum, sale) => sum + sale.total_harga, 0) || 0;
+        validationData?.reduce((sum, sale) => sum + getNetSaleAmount(sale), 0) ||
+        0;
 
       // Calculate total revenue from category stats
       const totalRevenueFromCategories = categoryStatsArray.reduce(
