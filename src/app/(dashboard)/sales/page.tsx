@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import { TablePageSkeleton } from "@/components/ui/page-skeletons";
 import { getNetSaleAmount } from "@/lib/discount";
 
 interface Sale {
@@ -236,13 +237,7 @@ export default function SalesPage() {
   };
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--framer-color-tint)]"></div>
-        </div>
-      </div>
-    );
+    return <TablePageSkeleton />;
   }
 
   return (

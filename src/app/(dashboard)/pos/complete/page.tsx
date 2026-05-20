@@ -9,6 +9,7 @@ import {
   ArrowLeftIcon,
   DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
+import { PosCompletePageSkeleton } from "@/components/ui/page-skeletons";
 
 interface SaleData {
   id_penjualan: number;
@@ -130,13 +131,7 @@ export default function TransactionCompletePage() {
   };
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-        </div>
-      </div>
-    );
+    return <PosCompletePageSkeleton />;
   }
 
   if (error) {

@@ -10,6 +10,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useLoading } from "@/components/layout/LoadingContext";
 import GlobalLoading from "@/components/layout/GlobalLoading";
+import { MainContentLayoutSkeleton } from "@/components/ui/page-skeletons";
 import { useCashierHeartbeat } from "@/hooks/useCashierHeartbeat";
 
 interface DashboardLayoutProps {
@@ -75,16 +76,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     endNavigation();
   }, [pathname, endNavigation]);
 
-  // Show loading only during initial auth check
+  // Show loading only during initial auth check (sidebar stays real)
   if (loading && !authChecked) {
     return (
-      <div className="flex h-screen bg-[var(--framer-color-bg)] items-center justify-center">
-        <div className="bg-[var(--framer-color-bg)] rounded-[var(--framer-radius-lg)] p-6 flex items-center space-x-3 shadow-md border border-[var(--framer-color-border)]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--framer-color-tint)]"></div>
-          <span className="text-[var(--framer-color-text)] font-medium">
-            Loading...
-          </span>
-        </div>
+      <div className="flex h-screen bg-[var(--framer-color-bg)]">
+        <Sidebar userLevel={1} />
+        <MainContentLayoutSkeleton />
       </div>
     );
   }

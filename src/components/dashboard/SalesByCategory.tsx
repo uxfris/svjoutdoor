@@ -7,7 +7,7 @@ import {
   CurrencyDollarIcon,
   ShoppingBagIcon,
 } from "@heroicons/react/24/outline";
-import { log } from "console";
+import { CardBlockSkeleton } from "@/components/ui/page-skeletons";
 
 interface CategorySalesData {
   id_kategori: number;
@@ -109,16 +109,7 @@ export function SalesByCategory({
   ];
 
   if (loading) {
-    return (
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-4 bg-gray-200 rounded"></div>
-          ))}
-        </div>
-      </div>
-    );
+    return <CardBlockSkeleton lines={5} />;
   }
 
   return (

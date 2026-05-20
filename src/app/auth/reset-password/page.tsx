@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AuthPageSkeleton } from "@/components/ui/page-skeletons";
 
 function ResetPasswordForm() {
   const [password, setPassword] = useState("");
@@ -99,15 +100,14 @@ function ResetPasswordForm() {
     }
   };
 
-  if (isLoading || !isValidSession) {
+  if (isLoading) {
+    return <AuthPageSkeleton />;
+  }
+
+  if (!isValidSession) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-pink-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-200 border-t-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 text-lg">
-            {isLoading ? "Verifying reset link..." : "Invalid reset link"}
-          </p>
-        </div>
+        <p className="text-gray-600 text-lg">Invalid reset link</p>
       </div>
     );
   }
@@ -297,14 +297,7 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading...</p>
-          </div>
-        </div>
-      }
+      fallback={<AuthPageSkeleton />}
     >
       <ResetPasswordForm />
     </Suspense>

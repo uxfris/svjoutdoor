@@ -4,6 +4,7 @@ import { Database } from "@/lib/database.types";
 import { usePathname } from "next/navigation";
 import { ChevronRightIcon, HomeIcon } from "@heroicons/react/24/outline";
 import { memo, useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type User = Database["public"]["Tables"]["users"]["Row"];
 
@@ -50,23 +51,11 @@ const Header = memo(function Header({ user }: HeaderProps) {
     return (
       <header className="bg-[var(--framer-color-bg)] border-b border-[var(--framer-color-border)]">
         <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center space-x-4">
-            <div>
-              <h2 className="text-xl font-semibold text-[var(--framer-color-text)]">
-                Memuat...
-              </h2>
-              <p className="text-sm text-[var(--framer-color-text-secondary)]">
-                Mohon tunggu
-              </p>
-            </div>
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-32" />
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-[var(--framer-color-surface)] rounded-full flex items-center justify-center animate-pulse">
-              <span className="text-sm font-medium text-[var(--framer-color-text-tertiary)]">
-                ...
-              </span>
-            </div>
-          </div>
+          <Skeleton className="h-10 w-10 rounded-full" />
         </div>
       </header>
     );
@@ -103,8 +92,8 @@ const Header = memo(function Header({ user }: HeaderProps) {
         </div>
 
         {/* User Profile */}
-        <div className="flex items-center space-x-4">
-          <div className="text-right">
+        <div className="flex items-center space-x-4 bg-[#F2F4F6] pl-4 pr-2 py-2 rounded-xl">
+          <div className="text-left">
             <p className="text-sm font-semibold text-[var(--framer-color-text)]">
               {user.name}
             </p>
@@ -119,7 +108,7 @@ const Header = memo(function Header({ user }: HeaderProps) {
               {user.level === 1 ? "Administrator" : "Kasir"}
             </p>
           </div>
-          <div className="w-10 h-10 bg-[var(--framer-color-tint)] rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-[var(--framer-color-tint)] rounded-xl flex items-center justify-center">
             <span className="text-sm font-semibold text-[var(--framer-color-tint-text)]">
               {user.name.charAt(0).toUpperCase()}
             </span>

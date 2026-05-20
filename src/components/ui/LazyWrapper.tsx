@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, lazy, ComponentType } from "react";
+import { CardBlockSkeleton } from "@/components/ui/page-skeletons";
 
 interface LazyWrapperProps {
   fallback?: React.ReactNode;
@@ -15,8 +16,8 @@ export function LazyWrapper({ fallback, children }: LazyWrapperProps) {
 
 function DefaultFallback() {
   return (
-    <div className="flex items-center justify-center p-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--framer-color-tint)]"></div>
+    <div className="p-8">
+      <CardBlockSkeleton lines={4} />
     </div>
   );
 }

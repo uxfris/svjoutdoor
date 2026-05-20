@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import DataResetSection from "./DataResetSection";
+import { FormPageSkeleton } from "@/components/ui/page-skeletons";
 
 interface Settings {
   id_setting: number;
@@ -135,13 +136,7 @@ export default function SettingsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-        </div>
-      </div>
-    );
+    return <FormPageSkeleton fields={6} />;
   }
 
   return (

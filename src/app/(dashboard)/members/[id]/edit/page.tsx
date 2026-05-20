@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { createClient } from "@/lib/supabase/client";
+import { FormPageSkeleton } from "@/components/ui/page-skeletons";
 
 interface EditMemberPageProps {
   params: {
@@ -88,12 +89,7 @@ export default function EditMemberPage({ params }: EditMemberPageProps) {
   };
 
   if (initialLoading) {
-    return (
-      <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-          </div>
-        </div>);
+    return <FormPageSkeleton fields={4} />;
   }
 
   return (

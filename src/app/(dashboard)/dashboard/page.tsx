@@ -6,6 +6,7 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
 import { SalesByCategory } from "@/components/dashboard/SalesByCategory";
 import { LazyWrapper } from "@/components/ui/LazyWrapper";
+import { DashboardPageSkeleton } from "@/components/ui/page-skeletons";
 import { RecentSale } from "@/lib/database.types";
 import { getNetSaleAmount } from "@/lib/discount";
 import { PrintService, PrintReceiptData } from "@/lib/print-service";
@@ -1018,13 +1019,7 @@ export default function DashboardPage() {
   }, [stats, isAdmin]);
 
   if (loading) {
-    return (
-      <div className="p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--framer-color-tint)]"></div>
-        </div>
-      </div>
-    );
+    return <DashboardPageSkeleton />;
   }
 
   if (!user) {
