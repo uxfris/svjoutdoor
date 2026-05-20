@@ -2,11 +2,57 @@
 
 import { memo } from "react";
 import { XMarkIcon as CloseIcon } from "@heroicons/react/24/outline";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getItemDiscountAmount,
   getNetSaleAmount,
   getSaleDiscountAmount,
 } from "@/lib/discount";
+
+function SaleDetailsDrawerSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-5 w-32" />
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <Skeleton className="h-6 w-16 mb-4" />
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-lg p-4 border border-[var(--framer-color-border)] bg-[var(--framer-color-surface)]"
+            >
+              <div className="flex justify-between items-start mb-3">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-5 w-24" />
+              </div>
+              <div className="flex gap-4">
+                <Skeleton className="h-4 w-14" />
+                <Skeleton className="h-4 w-28" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-lg p-4 border border-[var(--framer-color-border)] bg-[var(--framer-color-surface)] space-y-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex justify-between">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 interface SaleDetail {
   id_penjualan: number;
@@ -53,41 +99,39 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
 
       {/* Drawer Panel */}
       <div
-        className={`absolute right-0 top-0 h-full w-full max-w-2xl bg-[var(--framer-color-bg)] shadow-2xl transform transition-transform duration-300 ease-in-out pointer-events-auto ${
-          isLoading ? "animate-pulse" : ""
-        }`}
+        className="absolute right-0 top-0 h-full w-full max-w-2xl bg-[var(--framer-color-bg)] shadow-2xl transform transition-transform duration-300 ease-in-out pointer-events-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[var(--framer-color-border)] bg-[var(--framer-color-surface)]">
-            <div>
-              <h2 className="text-xl font-bold text-[var(--framer-color-text)]">
-                {isLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <span>Memuat Detail Penjualan</span>
-                    <div className="animate-pulse w-2 h-2 bg-[var(--framer-color-tint)] rounded-full"></div>
-                  </div>
-                ) : (
-                  `Detail Penjualan #${selectedSale?.id_penjualan}`
-                )}
-              </h2>
-              <p className="text-sm text-[var(--framer-color-text-secondary)]">
-                {isLoading
-                  ? "Mohon tunggu sambil kami mengambil detail..."
-                  : selectedSale?.created_at
-                  ? new Date(selectedSale.created_at).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
-                    )
-                  : ""}
-              </p>
+            <div className="space-y-2">
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-7 w-56" />
+                  <Skeleton className="h-4 w-44" />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold text-[var(--framer-color-text)]">
+                    Detail Penjualan #{selectedSale?.id_penjualan}
+                  </h2>
+                  <p className="text-sm text-[var(--framer-color-text-secondary)]">
+                    {selectedSale?.created_at
+                      ? new Date(selectedSale.created_at).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )
+                      : ""}
+                  </p>
+                </>
+              )}
             </div>
             <button
               onClick={onClose}
@@ -100,17 +144,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--framer-color-tint)]"></div>
-                <div className="text-center">
-                  <p className="text-[var(--framer-color-text)] font-medium">
-                    Memuat detail penjualan...
-                  </p>
-                  <p className="text-[var(--framer-color-text-secondary)] text-sm mt-1">
-                    Mengambil informasi kategori dan transaksi
-                  </p>
-                </div>
-              </div>
+              <SaleDetailsDrawerSkeleton />
             ) : selectedSale ? (
               <div className="space-y-6">
                 {/* Sale Info */}
