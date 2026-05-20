@@ -59,7 +59,7 @@ export default function POSPage() {
       if (categoriesResult.error) {
         console.error("Categories error:", categoriesResult.error);
         setError(
-          `Failed to load categories: ${categoriesResult.error.message}`
+          `Failed to load categories: ${categoriesResult.error.message}`,
         );
       } else {
         setCategories(categoriesResult.data || []);
@@ -75,7 +75,7 @@ export default function POSPage() {
       setError(
         `Failed to load data: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     } finally {
       setGlobalLoading(false);
@@ -109,11 +109,11 @@ export default function POSPage() {
               discount: clampDiscountValue(
                 newPrice,
                 item.discount,
-                item.discountType
+                item.discountType,
               ),
             }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
@@ -128,17 +128,17 @@ export default function POSPage() {
               discount: clampDiscountValue(
                 item.harga_jual,
                 discount,
-                item.discountType
+                item.discountType,
               ),
             }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
   const updateDiscountType = (
     itemId: string,
-    discountType: "percentage" | "amount"
+    discountType: "percentage" | "amount",
   ) => {
     setCart(
       cart.map((item) =>
@@ -148,14 +148,14 @@ export default function POSPage() {
               discountType: discountType,
               discount: 0, // Reset discount when changing type
             }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
   const isPriceModified = (item: CartItem) => {
     const originalCategory = categories.find(
-      (cat) => cat.id_kategori === item.id_kategori
+      (cat) => cat.id_kategori === item.id_kategori,
     );
     return originalCategory && originalCategory.harga_jual !== item.harga_jual;
   };
@@ -249,7 +249,7 @@ export default function POSPage() {
       console.log("POS - Payment method length:", paymentMethod?.length);
       console.log(
         "POS - Payment method char codes:",
-        paymentMethod?.split("").map((c) => c.charCodeAt(0))
+        paymentMethod?.split("").map((c) => c.charCodeAt(0)),
       );
 
       const response = await fetch("/api/sales", {
@@ -278,7 +278,7 @@ export default function POSPage() {
   };
 
   const filteredCategories = categories.filter((category) =>
-    category.nama_kategori.toLowerCase().includes(searchTerm.toLowerCase())
+    category.nama_kategori.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -494,10 +494,10 @@ export default function POSPage() {
               </div>
             </div>
 
-            {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto">
+            {/* Cart Items — only grow when there are items to scroll */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
               {cart.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                <div className="flex flex-col items-center text-center px-6 py-5">
                   <svg
                     className="w-16 h-16 text-gray-300 mb-4"
                     fill="none"
@@ -572,7 +572,7 @@ export default function POSPage() {
                                   value={formatNumber(item.harga_jual)}
                                   onChange={(e) => {
                                     const newPrice = parseFormattedNumber(
-                                      e.target.value
+                                      e.target.value,
                                     );
                                     updatePrice(item.id, newPrice);
                                   }}
@@ -641,7 +641,7 @@ export default function POSPage() {
                                         item.discountType === "percentage"
                                           ? Number(e.target.value) || 0
                                           : parseFormattedNumber(
-                                              e.target.value
+                                              e.target.value,
                                             );
                                       updateDiscount(item.id, value);
                                     }}

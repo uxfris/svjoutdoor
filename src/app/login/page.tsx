@@ -1,4 +1,5 @@
 import AuthForm from "@/components/auth/AuthForm";
+import Image from "next/image";
 
 interface LoginPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -16,22 +17,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10 flex flex-col justify-center px-12 py-16">
             <div className="max-w-md">
-              <div className="flex items-center mb-8">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
-                  <svg
-                    className="w-8 h-8 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                </div>
+              <div className="flex items-center mb-8 gap-2">
+                <Image
+                  className="rounded-full"
+                  src="/app-logo.png"
+                  alt={"app-logo"}
+                  width={40}
+                  height={40}
+                />
                 <h1 className="text-3xl font-bold text-white">SVJ Outdoor</h1>
               </div>
               <h2 className="text-4xl font-bold text-white mb-6 leading-tight">

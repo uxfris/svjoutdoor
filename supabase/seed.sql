@@ -163,6 +163,32 @@ SET
 WHERE id_setting = (SELECT min(id_setting) FROM public.setting);
 
 -- ---------------------------------------------------------------------------
+-- Kategori tambahan (migration 023 = 15 item dasar; ini melengkapi katalog demo)
+-- ---------------------------------------------------------------------------
+INSERT INTO public.kategori (nama_kategori, harga_jual, stok, kode_kategori) VALUES
+  ('Tenda Ultralight 1 Orang', 320000, 6, 'TD-003'),
+  ('Fly Sheet 3x3 m', 95000, 14, 'FS-001'),
+  ('Terpal Waterproof 4x6', 125000, 10, 'TP-001'),
+  ('Hammock Single + Tali', 185000, 12, 'HM-001'),
+  ('Headlamp LED Recharge', 85000, 22, 'HL-001'),
+  ('Senter LED 1000 Lumens', 65000, 28, 'ST-001'),
+  ('Cooler Box 28L', 275000, 7, 'CB-001'),
+  ('Botol Stainless 750ml', 45000, 40, 'BT-001'),
+  ('Set Piring Mangkok Camping', 55000, 18, 'PK-001'),
+  ('Tas Dry Bag 20L', 110000, 16, 'DB-001'),
+  ('Rain Cover Ransel 40-60L', 60000, 20, 'RC-001'),
+  ('Carabiner Set 5 pcs', 35000, 35, 'CR-001'),
+  ('Tali Prusik 5m', 25000, 30, 'TL-001'),
+  ('Sarung Tangan Hiking', 55000, 24, 'SG-001'),
+  ('Kaos Kaki Trekking 3 pasang', 40000, 32, 'KK-001'),
+  ('Jaket Windbreaker', 220000, 11, 'JW-001'),
+  ('Celana Convertible', 175000, 13, 'CC-001'),
+  ('Sandal Gunung', 95000, 18, 'SD-001'),
+  ('Pelindung Matahari SPF50', 35000, 26, 'SS-001'),
+  ('P3K Camping Kit', 90000, 14, 'PK-002')
+ON CONFLICT (nama_kategori) DO NOTHING;
+
+-- ---------------------------------------------------------------------------
 -- Suppliers & members
 -- ---------------------------------------------------------------------------
 INSERT INTO public.supplier (nama, alamat, telepon) VALUES
@@ -274,7 +300,27 @@ FROM (VALUES
   ('SH-001', 9),
   ('JG-001', 12),
   ('CH-001', 15),
-  ('TA-001', 19)
+  ('TA-001', 19),
+  ('TD-003', 6),
+  ('FS-001', 14),
+  ('TP-001', 10),
+  ('HM-001', 12),
+  ('HL-001', 22),
+  ('ST-001', 28),
+  ('CB-001', 7),
+  ('BT-001', 40),
+  ('PK-001', 18),
+  ('DB-001', 16),
+  ('RC-001', 20),
+  ('CR-001', 35),
+  ('TL-001', 30),
+  ('SG-001', 24),
+  ('KK-001', 32),
+  ('JW-001', 11),
+  ('CC-001', 13),
+  ('SD-001', 18),
+  ('SS-001', 26),
+  ('PK-002', 14)
 ) AS v(kode, stok)
 WHERE k.kode_kategori = v.kode;
 
