@@ -40,6 +40,8 @@ WHERE email IN (
 -- Admin:    Admin123!
 -- Cashier:  Cashier123!
 -- ---------------------------------------------------------------------------
+-- Token columns must be '' (not NULL): GoTrue scans them as strings
+-- (see https://github.com/supabase/auth/issues/1940 )
 INSERT INTO auth.users (
   instance_id,
   id,
@@ -53,7 +55,9 @@ INSERT INTO auth.users (
   created_at,
   updated_at,
   confirmation_token,
-  recovery_token
+  recovery_token,
+  email_change,
+  email_change_token_new
 )
 VALUES
   (
@@ -68,8 +72,10 @@ VALUES
     '{"name":"Admin SVJ"}'::jsonb,
     now(),
     now(),
-    null,
-    null
+    '',
+    '',
+    '',
+    ''
   ),
   (
     '00000000-0000-0000-0000-000000000000',
@@ -83,8 +89,10 @@ VALUES
     '{"name":"Kasir Utama"}'::jsonb,
     now(),
     now(),
-    null,
-    null
+    '',
+    '',
+    '',
+    ''
   );
 
 INSERT INTO auth.identities (
