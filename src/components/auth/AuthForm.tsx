@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { getPostLoginPath } from "@/lib/auth-redirect";
 import ForgotPasswordModal from "./ForgotPasswordModal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -35,7 +36,20 @@ export default function AuthForm({ mode, error: initialError }: AuthFormProps) {
           password,
         });
         if (error) throw error;
-        router.push("/dashboard");
+
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        let redirectPath = "/dashboard";
+        if (user) {
+          const { data: profile } = await supabase
+            .from("users")
+            .select("level")
+            .eq("id", user.id)
+            .single();
+          redirectPath = getPostLoginPath(profile?.level);
+        }
+        router.push(redirectPath);
       } else {
         const siteUrl =
           process.env.NEXT_PUBLIC_SITE_URL ||
