@@ -23,7 +23,8 @@ import { useLoading } from "./LoadingContext";
 import Image from "next/image";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, level: [1, 2] },
+  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, level: [1] },
+  { name: "Laporan", href: "/dashboard", icon: HomeIcon, level: [2] },
   { name: "Kategori", href: "/categories", icon: TagIcon, level: [1] },
   { name: "Laporan", href: "/reports", icon: DocumentChartBarIcon, level: [1] },
   { name: "Member", href: "/members", icon: UserGroupIcon, level: [1] },
@@ -36,6 +37,8 @@ const navigation = [
   { name: "Pengaturan", href: "/settings", icon: CogIcon, level: [1] },
   { name: "Profil", href: "/profile", icon: UserIcon, level: [1, 2] },
 ];
+
+const CASHIER_NAV_ORDER = ["Kasir", "Laporan", "Profil"];
 
 interface SidebarProps {
   userLevel: number;
@@ -72,9 +75,14 @@ const Sidebar = memo(function Sidebar({ userLevel }: SidebarProps) {
     [pathname, router],
   );
 
-  const filteredNavigation = navigation.filter((item) =>
-    item.level.includes(userLevel),
-  );
+  const filteredNavigation = navigation
+    .filter((item) => item.level.includes(userLevel))
+    .sort((a, b) => {
+      if (userLevel !== 2) return 0;
+      return (
+        CASHIER_NAV_ORDER.indexOf(a.name) - CASHIER_NAV_ORDER.indexOf(b.name)
+      );
+    });
 
   return (
     <>

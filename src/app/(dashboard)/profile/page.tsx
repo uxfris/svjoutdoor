@@ -396,22 +396,27 @@ export default function ProfilePage() {
                 Keluar Semua
               </Button>
             </div>
-            <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
-              <div>
-                <h3 className="text-sm font-medium text-red-900">Hapus Akun</h3>
-                <p className="text-sm text-red-500">
-                  Tindakan ini tidak dapat dibatalkan
-                </p>
+            {/* Hapus Akun — hidden for cashiers (level 2); admin only */}
+            {user.level === 1 && (
+              <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
+                <div>
+                  <h3 className="text-sm font-medium text-red-900">
+                    Hapus Akun
+                  </h3>
+                  <p className="text-sm text-red-500">
+                    Tindakan ini tidak dapat dibatalkan
+                  </p>
+                </div>
+                <Button
+                  variant="danger"
+                  onClick={() => handleAccountAction("delete_account")}
+                  loading={actionLoading === "delete_account"}
+                  disabled={actionLoading === "delete_account"}
+                >
+                  Hapus Akun
+                </Button>
               </div>
-              <Button
-                variant="danger"
-                onClick={() => handleAccountAction("delete_account")}
-                loading={actionLoading === "delete_account"}
-                disabled={actionLoading === "delete_account"}
-              >
-                Hapus Akun
-              </Button>
-            </div>
+            )}
           </div>
         </div>
       </div>
