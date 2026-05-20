@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getNetSaleAmount } from "@/lib/discount";
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate summary statistics
     const totalRevenue =
-      sales?.reduce((sum, sale) => sum + sale.total_harga, 0) || 0;
+      sales?.reduce((sum, sale) => sum + getNetSaleAmount(sale), 0) || 0;
     const totalTransactions = sales?.length || 0;
     const totalItems =
       sales?.reduce((sum, sale) => sum + sale.total_item, 0) || 0;
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
         if (!acc[date]) {
           acc[date] = { date, revenue: 0, transactions: 0 };
         }
-        acc[date].revenue += sale.total_harga;
+        acc[date].revenue += getNetSaleAmount(sale);
         acc[date].transactions += 1;
         return acc;
       }, {} as Record<string, { date: string; revenue: number; transactions: number }>) ||
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest) {
           acc[method] = { count: 0, revenue: 0 };
         }
         acc[method].count += 1;
-        acc[method].revenue += sale.total_harga;
+        acc[method].revenue += getNetSaleAmount(sale);
         return acc;
       }, {} as Record<string, { count: number; revenue: number }>) || {};
 
@@ -112,7 +113,7 @@ export async function GET(request: NextRequest) {
     const recentSales =
       sales?.slice(0, 10).map((sale) => ({
         id: sale.id_penjualan,
-        total: sale.total_harga,
+        total: getNetSaleAmount(sale),
         items: sale.total_item,
         date: sale.created_at,
         user: sale.users?.name || "Unknown",
@@ -125,12 +126,13 @@ export async function GET(request: NextRequest) {
     );
     const { data: previousSales } = await supabase
       .from("penjualan")
-      .select("total_harga, total_item")
+      .select("total_harga, diskon, discount_type, bayar, total_item")
       .gte("created_at", previousStart.toISOString())
       .lt("created_at", start.toISOString());
 
     const previousRevenue =
-      previousSales?.reduce((sum, sale) => sum + sale.total_harga, 0) || 0;
+      previousSales?.reduce((sum, sale) => sum + getNetSaleAmount(sale), 0) ||
+      0;
     const previousTransactions = previousSales?.length || 0;
     const previousItems =
       previousSales?.reduce((sum, sale) => sum + sale.total_item, 0) || 0;

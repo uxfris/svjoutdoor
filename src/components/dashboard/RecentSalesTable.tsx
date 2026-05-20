@@ -9,6 +9,7 @@ import {
   PrinterIcon,
 } from "@heroicons/react/24/outline";
 import { RecentSale } from "@/lib/database.types";
+import { getNetSaleAmount } from "@/lib/discount";
 
 interface RecentSalesTableProps {
   recentSales: RecentSale[];
@@ -374,7 +375,7 @@ export const RecentSalesTable = memo(function RecentSalesTable({
                 </td>
                 <td className="px-8 py-4 whitespace-nowrap">
                   <span className="text-sm font-semibold text-[var(--framer-color-text)]">
-                    Rp {sale.total_harga.toLocaleString()}
+                    Rp {getNetSaleAmount(sale).toLocaleString()}
                   </span>
                 </td>
                 <td className="px-8 py-4 whitespace-nowrap text-sm text-[var(--framer-color-text-tertiary)]">

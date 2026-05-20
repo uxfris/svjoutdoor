@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getNetSaleAmount, getSaleDiscountAmount } from "@/lib/discount";
 
 export async function GET(request: NextRequest) {
   try {
@@ -89,8 +90,9 @@ export async function GET(request: NextRequest) {
     const totalRevenue =
       sales?.reduce((sum, sale) => sum + sale.total_harga, 0) || 0;
     const totalDiscounts =
-      sales?.reduce((sum, sale) => sum + (sale.diskon || 0), 0) || 0;
-    const netRevenue = totalRevenue - totalDiscounts;
+      sales?.reduce((sum, sale) => sum + getSaleDiscountAmount(sale), 0) || 0;
+    const netRevenue =
+      sales?.reduce((sum, sale) => sum + getNetSaleAmount(sale), 0) || 0;
 
     // Calculate cost of goods sold (COGS)
     // This is a simplified calculation - in reality, you'd need to track inventory more precisely
@@ -139,7 +141,7 @@ export async function GET(request: NextRequest) {
         if (!acc[date]) {
           acc[date] = { date, revenue: 0, expenses: 0, profit: 0 };
         }
-        acc[date].revenue += sale.total_harga - (sale.diskon || 0);
+        acc[date].revenue += getNetSaleAmount(sale);
         return acc;
       }, {} as Record<string, { date: string; revenue: number; expenses: number; profit: number }>) ||
       {};
@@ -215,7 +217,7 @@ export async function GET(request: NextRequest) {
     );
     const { data: previousSales } = await supabase
       .from("penjualan")
-      .select("total_harga, diskon")
+      .select("total_harga, diskon, discount_type, bayar")
       .gte("created_at", previousStart.toISOString())
       .lt("created_at", start.toISOString());
 
@@ -227,7 +229,7 @@ export async function GET(request: NextRequest) {
 
     const previousRevenue =
       previousSales?.reduce(
-        (sum, sale) => sum + sale.total_harga - (sale.diskon || 0),
+        (sum, sale) => sum + getNetSaleAmount(sale),
         0
       ) || 0;
     const previousTotalExpenses =

@@ -2,6 +2,11 @@
 
 import { memo } from "react";
 import { XMarkIcon as CloseIcon } from "@heroicons/react/24/outline";
+import {
+  getItemDiscountAmount,
+  getNetSaleAmount,
+  getSaleDiscountAmount,
+} from "@/lib/discount";
 
 interface SaleDetail {
   id_penjualan: number;
@@ -168,12 +173,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                               {item.diskon > 0 && (
                                 <span className="text-red-600">
                                   Diskon: -Rp{" "}
-                                  {item.discount_type === "percentage"
-                                    ? (
-                                        (item.harga_jual * item.diskon) /
-                                        100
-                                      ).toLocaleString()
-                                    : item.diskon.toLocaleString()}
+                                  {getItemDiscountAmount(item).toLocaleString()}
                                   {item.discount_type === "percentage" && (
                                     <span className="text-xs text-gray-500 ml-1">
                                       ({item.diskon}%)
@@ -212,13 +212,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                         </span>
                         <span className="text-red-600">
                           - Rp{" "}
-                          {selectedSale.discount_type === "percentage"
-                            ? (
-                                (selectedSale.total_harga *
-                                  selectedSale.diskon) /
-                                100
-                              ).toLocaleString()
-                            : selectedSale.diskon.toLocaleString()}
+                          {getSaleDiscountAmount(selectedSale).toLocaleString()}
                           {selectedSale.discount_type === "percentage" && (
                             <span className="text-sm text-gray-500 ml-1">
                               ({selectedSale.diskon}%)
@@ -249,7 +243,7 @@ export const SaleDetailsDrawer = memo(function SaleDetailsDrawer({
                           Total:
                         </span>
                         <span className="font-bold text-[var(--framer-color-text)] text-lg">
-                          Rp {selectedSale.total_harga.toLocaleString()}
+                          Rp {getNetSaleAmount(selectedSale).toLocaleString()}
                         </span>
                       </div>
                     </div>

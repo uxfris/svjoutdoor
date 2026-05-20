@@ -7,6 +7,7 @@ import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
 import { SalesByCategory } from "@/components/dashboard/SalesByCategory";
 import { LazyWrapper } from "@/components/ui/LazyWrapper";
 import { RecentSale } from "@/lib/database.types";
+import { getNetSaleAmount } from "@/lib/discount";
 import { PrintService, PrintReceiptData } from "@/lib/print-service";
 import {
   presenceFromHeartbeat,
@@ -208,19 +209,24 @@ export default function DashboardPage() {
               .select("*", { count: "exact", head: true }),
             supabase
               .from("penjualan")
-              .select("total_harga, payment_method", { count: "exact" })
+              .select(
+                "total_harga, diskon, discount_type, bayar, payment_method",
+                { count: "exact" },
+              )
               .eq("id_user", user?.id)
               .gte("created_at", todayStart.toISOString())
               .lt("created_at", todayEnd.toISOString()),
             supabase
               .from("penjualan")
-              .select("total_harga", { count: "exact" })
+              .select("total_harga, diskon, discount_type, bayar", {
+                count: "exact",
+              })
               .eq("id_user", user?.id),
           ]);
 
         const todayRevenue =
           todaySalesResult.data?.reduce(
-            (sum, sale) => sum + sale.total_harga,
+            (sum, sale) => sum + getNetSaleAmount(sale),
             0,
           ) || 0;
 
@@ -228,14 +234,16 @@ export default function DashboardPage() {
         const todayCash =
           todaySalesResult.data?.reduce(
             (sum, sale) =>
-              sum + (sale.payment_method === "cash" ? sale.total_harga : 0),
+              sum +
+              (sale.payment_method === "cash" ? getNetSaleAmount(sale) : 0),
             0,
           ) || 0;
 
         const todayDebit =
           todaySalesResult.data?.reduce(
             (sum, sale) =>
-              sum + (sale.payment_method === "debit" ? sale.total_harga : 0),
+              sum +
+              (sale.payment_method === "debit" ? getNetSaleAmount(sale) : 0),
             0,
           ) || 0;
 
@@ -272,6 +280,9 @@ export default function DashboardPage() {
             id_penjualan,
             total_item,
             total_harga,
+            diskon,
+            discount_type,
+            bayar,
             created_at,
             id_user,
             penjualan_detail(
@@ -374,7 +385,9 @@ export default function DashboardPage() {
       // Get all sales in the date range
       let query = supabase
         .from("penjualan")
-        .select("id_user, total_harga, payment_method, created_at");
+        .select(
+          "id_user, total_harga, diskon, discount_type, bayar, payment_method, created_at",
+        );
 
       // Only apply date filters if not "all time"
       if (cashierTimeFilter !== "all") {
@@ -436,15 +449,15 @@ export default function DashboardPage() {
 
           // Calculate totals
           const totalRevenue = userSales.reduce(
-            (sum, sale) => sum + sale.total_harga,
+            (sum, sale) => sum + getNetSaleAmount(sale),
             0,
           );
           const totalCash = cashSales.reduce(
-            (sum, sale) => sum + sale.total_harga,
+            (sum, sale) => sum + getNetSaleAmount(sale),
             0,
           );
           const totalDebit = debitSales.reduce(
-            (sum, sale) => sum + sale.total_harga,
+            (sum, sale) => sum + getNetSaleAmount(sale),
             0,
           );
 
@@ -484,7 +497,7 @@ export default function DashboardPage() {
           (sale.users?.name || "Unknown")
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          sale.total_harga.toString().includes(searchTerm),
+          getNetSaleAmount(sale).toString().includes(searchTerm),
       );
     }
 
@@ -521,16 +534,17 @@ export default function DashboardPage() {
       });
     }
 
-    // Amount filter
+    // Amount filter (net amount after discount)
     if (amountFilter !== "all") {
       filtered = filtered.filter((sale) => {
+        const netAmount = getNetSaleAmount(sale);
         switch (amountFilter) {
           case "low":
-            return sale.total_harga < 100000; // Less than 100k
+            return netAmount < 100000; // Less than 100k
           case "medium":
-            return sale.total_harga >= 100000 && sale.total_harga < 500000; // 100k - 500k
+            return netAmount >= 100000 && netAmount < 500000; // 100k - 500k
           case "high":
-            return sale.total_harga >= 500000; // More than 500k
+            return netAmount >= 500000; // More than 500k
           default:
             return true;
         }

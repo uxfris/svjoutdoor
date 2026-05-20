@@ -11,6 +11,9 @@ export interface RecentSale {
   id_penjualan: number;
   total_item: number;
   total_harga: number;
+  diskon?: number;
+  discount_type?: "percentage" | "amount";
+  bayar?: number;
   created_at: string;
   id_user: string;
   users?: { name: string; level: number } | null;
