@@ -29,18 +29,18 @@ export const StatsCard = memo(function StatsCard({
 }: StatsCardProps) {
   if (variant === "adminHero") {
     return (
-      <div className="rounded-xl border border-white/10 bg-white/10 p-4 shadow-none backdrop-blur-sm md:p-3.5">
+      <div className="rounded-xl border border-white/10 bg-white/10 p-4 shadow-none backdrop-blur-sm md:p-8">
         <div className="flex w-full items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#b4c5ff] md:text-xs">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#b4c5ff] md:text-xs">
               {name}
             </p>
-            <p className="mt-0.5 truncate text-2xl font-extrabold tracking-tight text-white md:text-3xl">
+            <p className="mt-1 truncate text-2xl font-extrabold tracking-tight text-white md:text-5xl">
               {typeof value === "number" ? value.toLocaleString() : value}
             </p>
           </div>
-          <div className="shrink-0 rounded-lg bg-white/20 p-2 md:p-2.5">
-            <Icon className="size-5 text-white md:size-6" aria-hidden />
+          <div className="shrink-0 rounded-lg bg-white/20 p-2 md:p-5">
+            <Icon className="size-5 text-white md:size-8" aria-hidden />
           </div>
         </div>
       </div>

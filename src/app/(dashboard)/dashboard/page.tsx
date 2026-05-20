@@ -19,6 +19,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 
 // Lazy load the drawer component
 const SaleDetailsDrawer = dynamic(
@@ -26,7 +27,7 @@ const SaleDetailsDrawer = dynamic(
     import("@/components/dashboard/SaleDetailsDrawer").then((mod) => ({
       default: mod.SaleDetailsDrawer,
     })),
-  { ssr: false }
+  { ssr: false },
 );
 
 const CASHIER_TIME_FILTER_OPTIONS: { value: string; label: string }[] = [
@@ -167,7 +168,7 @@ export default function DashboardPage() {
         const todayStart = new Date(
           today.getFullYear(),
           today.getMonth(),
-          today.getDate()
+          today.getDate(),
         );
         const todayEnd = new Date(todayStart);
         todayEnd.setDate(todayEnd.getDate() + 1);
@@ -192,7 +193,7 @@ export default function DashboardPage() {
         const todayRevenue =
           todaySalesResult.data?.reduce(
             (sum, sale) => sum + sale.total_harga,
-            0
+            0,
           ) || 0;
 
         // Calculate payment method breakdown for today
@@ -200,14 +201,14 @@ export default function DashboardPage() {
           todaySalesResult.data?.reduce(
             (sum, sale) =>
               sum + (sale.payment_method === "cash" ? sale.total_harga : 0),
-            0
+            0,
           ) || 0;
 
         const todayDebit =
           todaySalesResult.data?.reduce(
             (sum, sale) =>
               sum + (sale.payment_method === "debit" ? sale.total_harga : 0),
-            0
+            0,
           ) || 0;
 
         return {
@@ -222,7 +223,7 @@ export default function DashboardPage() {
         };
       }
     },
-    { ttl: 2 * 60 * 1000 } // 2 minutes cache
+    { ttl: 2 * 60 * 1000 }, // 2 minutes cache
   );
 
   const { fetchData: fetchRecentSales } = useDataCache(
@@ -249,7 +250,7 @@ export default function DashboardPage() {
               id_kategori,
               kategori(nama_kategori)
             )
-          `
+          `,
           )
           .order("created_at", { ascending: false })
           .limit(20);
@@ -296,7 +297,7 @@ export default function DashboardPage() {
         return [];
       }
     },
-    { ttl: 30 * 1000 }
+    { ttl: 30 * 1000 },
   );
 
   const { fetchData: fetchCashierStats } = useDataCache(
@@ -390,31 +391,31 @@ export default function DashboardPage() {
       usersData.forEach((user) => {
         const userSales = salesData.filter((sale) => sale.id_user === user.id);
         const cashSales = userSales.filter(
-          (sale) => sale.payment_method === "cash"
+          (sale) => sale.payment_method === "cash",
         );
         const debitSales = userSales.filter(
-          (sale) => sale.payment_method === "debit"
+          (sale) => sale.payment_method === "debit",
         );
 
         // Calculate totals
         const totalRevenue = userSales.reduce(
           (sum, sale) => sum + sale.total_harga,
-          0
+          0,
         );
         const totalCash = cashSales.reduce(
           (sum, sale) => sum + sale.total_harga,
-          0
+          0,
         );
         const totalDebit = debitSales.reduce(
           (sum, sale) => sum + sale.total_harga,
-          0
+          0,
         );
 
         // Validate data consistency (cash + debit should equal total revenue)
         const calculatedTotal = totalCash + totalDebit;
         if (Math.abs(totalRevenue - calculatedTotal) > 1) {
           console.warn(
-            `Revenue mismatch for cashier ${user.name}: Total=${totalRevenue}, Cash+Debit=${calculatedTotal}`
+            `Revenue mismatch for cashier ${user.name}: Total=${totalRevenue}, Cash+Debit=${calculatedTotal}`,
           );
         }
 
@@ -429,7 +430,7 @@ export default function DashboardPage() {
 
       return stats;
     },
-    { ttl: 2 * 60 * 1000 } // 2 minutes cache
+    { ttl: 2 * 60 * 1000 }, // 2 minutes cache
   );
 
   // Memoized filtered sales computation
@@ -444,7 +445,7 @@ export default function DashboardPage() {
           (sale.users?.name || "Unknown")
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          sale.total_harga.toString().includes(searchTerm)
+          sale.total_harga.toString().includes(searchTerm),
       );
     }
 
@@ -504,7 +505,7 @@ export default function DashboardPage() {
           return false;
         }
         return sale.penjualan_detail.some(
-          (detail) => detail.id_kategori.toString() === categoryFilter
+          (detail) => detail.id_kategori.toString() === categoryFilter,
         );
       });
     }
@@ -602,7 +603,7 @@ export default function DashboardPage() {
           supabase
             .from("setting")
             .select(
-              "nama_perusahaan, alamat, telepon, receipt_width_mm, receipt_font_size, receipt_paper_type, receipt_footer"
+              "nama_perusahaan, alamat, telepon, receipt_width_mm, receipt_font_size, receipt_paper_type, receipt_footer",
             )
             .single(),
         ]);
@@ -678,7 +679,7 @@ export default function DashboardPage() {
           created_at,
           id_member,
           id_user
-        `
+        `,
         )
         .eq("id_penjualan", saleId)
         .single();
@@ -718,7 +719,7 @@ export default function DashboardPage() {
           discount_type,
           subtotal,
           kategori(nama_kategori)
-        `
+        `,
         )
         .eq("id_penjualan", saleId);
 
@@ -783,7 +784,7 @@ export default function DashboardPage() {
           created_at,
           id_member,
           id_user
-        `
+        `,
           )
           .eq("id_penjualan", saleId)
           .single();
@@ -823,7 +824,7 @@ export default function DashboardPage() {
           discount_type,
           subtotal,
           kategori(nama_kategori)
-        `
+        `,
           )
           .eq("id_penjualan", saleId);
 
@@ -867,7 +868,7 @@ export default function DashboardPage() {
         setPrintingSaleId(null);
       }
     },
-    [settings]
+    [settings],
   );
 
   const statsArray = useMemo(() => {
@@ -940,20 +941,20 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-[#F7F9FB]">
       {/* Welcome Section + admin hero stats */}
-      <div className="mb-8">
+      <div className="mb-12">
         {isAdmin ? (
-          <div className="relative overflow-hidden rounded-2xl bg-[#2563eb] px-6 py-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] md:px-7 md:py-7">
-            <div
-              className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full bg-sky-200/25 opacity-90 blur-3xl"
-              aria-hidden
-            />
-            <div
-              className="pointer-events-none absolute bottom-0 right-[5%] h-56 w-56 rounded-full bg-white/15 opacity-40 blur-2xl"
-              aria-hidden
-            />
-            <div className="relative z-10 flex flex-col gap-5 md:gap-6">
+          <div className="relative overflow-hidden rounded-2xl bg-[#2563eb] px-6 py-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] md:px-7 md:py-10">
+            <div className="absolute -right-80 opacity-20">
+              <Image
+                src="/welcome-background.png"
+                alt={""}
+                width={600}
+                height={600}
+              />
+            </div>
+            <div className="relative z-10 flex flex-col gap-5 md:gap-12">
               <div className="flex flex-col gap-1">
                 <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
                   Selamat datang kembali!
@@ -993,7 +994,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid — cashier only; admin stats live in the hero above */}
-      <div className="mb-8 space-y-6">
+      <div className="mb-12 space-y-6">
         {isAdmin ? null : (
           // Cashier layout - special arrangement
           <>
@@ -1027,7 +1028,7 @@ export default function DashboardPage() {
 
       {/* Cashier Performance Section - Only for Admin */}
       {isAdmin && (
-        <div className="mb-8 flex flex-col gap-4">
+        <div className="mb-12 flex flex-col gap-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-0.5">
               <h2 className="text-xl font-bold text-[#191c1e] md:text-2xl">
@@ -1101,9 +1102,9 @@ export default function DashboardPage() {
               Object.entries(cashierStats).map(([cashierId, data], index) => (
                 <div
                   key={cashierId}
-                  className="overflow-hidden rounded-2xl bg-white p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+                  className="overflow-hidden rounded-4xl p-0.5 border-4 border-white"
                 >
-                  <div className="flex flex-col gap-4 rounded-[11px] bg-[#f2f4f6] p-4 md:gap-5 md:p-5">
+                  <div className="flex flex-col gap-4 rounded-[11px] bg-[#f2f4f6] p-4 md:gap-5 md:p-8">
                     <div className="flex items-start gap-3">
                       <div
                         className={`relative flex size-10 shrink-0 items-center justify-center rounded-lg shadow-md ${
@@ -1128,7 +1129,7 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 md:gap-3">
-                      <div className="flex flex-col gap-0.5 rounded-lg bg-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                      <div className="flex flex-col gap-0.5 rounded-xl bg-white px-6 pt-4 pb-10 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
                         <span className="text-[10px] font-semibold uppercase tracking-wide text-[#434655] md:text-xs">
                           Total Penjualan
                         </span>
@@ -1136,11 +1137,11 @@ export default function DashboardPage() {
                           {data.totalSales}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-0.5 rounded-lg border border-[rgba(0,74,198,0.08)] bg-[rgba(0,74,198,0.05)] px-3 py-3">
+                      <div className="flex flex-col gap-0.5 rounded-xl border border-[rgba(0,74,198,0.08)] bg-[rgba(0,74,198,0.05)] px-6 pt-4 pb-6">
                         <span className="text-[10px] font-semibold uppercase tracking-wide text-[#004ac6] md:text-xs">
                           Pendapatan Total
                         </span>
-                        <span className="text-base font-extrabold leading-tight text-[#004ac6] md:text-lg">
+                        <span className="text-base font-extrabold leading-tight text-[#004ac6] md:text-2xl">
                           Rp {data.totalRevenue.toLocaleString()}
                         </span>
                       </div>
@@ -1151,7 +1152,7 @@ export default function DashboardPage() {
                         Rincian Pembayaran
                       </p>
                       <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between rounded-md border border-[rgba(195,198,215,0.35)] bg-white px-3.5 py-2.5">
+                        <div className="flex items-center justify-between rounded-xl border border-white bg-white p-6">
                           <div className="flex items-center gap-2">
                             <BanknotesIcon
                               className="size-5 shrink-0 text-[#191c1e]"
@@ -1165,7 +1166,7 @@ export default function DashboardPage() {
                             Rp {data.totalCash.toLocaleString()}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between rounded-md border border-[rgba(195,198,215,0.35)] bg-white px-3.5 py-2.5">
+                        <div className="flex items-center justify-between rounded-xl border border-white bg-white p-6">
                           <div className="flex items-center gap-2">
                             <CreditCardIcon
                               className="size-5 shrink-0 text-[#191c1e]"
