@@ -4,18 +4,19 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { notFound } from "next/navigation";
 
 interface EditUserPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditUserPage({ params }: EditUserPageProps) {
+  const { id } = await params;
   const supabase = await createClient();
 
   const { data: user, error } = await supabase
     .from("users")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (error || !user) {

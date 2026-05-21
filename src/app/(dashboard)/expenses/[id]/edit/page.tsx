@@ -4,20 +4,21 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { notFound } from "next/navigation";
 
 interface EditExpensePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditExpensePage({
   params,
 }: EditExpensePageProps) {
+  const { id } = await params;
   const supabase = await createClient();
 
   const { data: expense, error } = await supabase
     .from("pengeluaran")
     .select("*")
-    .eq("id_pengeluaran", params.id)
+    .eq("id_pengeluaran", id)
     .single();
 
   if (error || !expense) {

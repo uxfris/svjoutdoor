@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { createClient } from "@/lib/supabase/client";
 
 interface EditCategoryPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function EditCategoryPage({ params }: EditCategoryPageProps) {
+  const { id } = use(params);
   const [formData, setFormData] = useState({
     nama_kategori: "",
     harga_jual: 0,
@@ -31,7 +32,7 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
         const { data: category, error } = await supabase
           .from("kategori")
           .select("*")
-          .eq("id_kategori", params.id)
+          .eq("id_kategori", id)
           .single();
 
         if (error) throw error;
@@ -50,7 +51,7 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
     };
 
     fetchCategory();
-  }, [params.id, supabase]);
+  }, [id, supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +67,7 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
           stok: formData.stok,
           kode_kategori: formData.kode_kategori,
         })
-        .eq("id_kategori", params.id);
+        .eq("id_kategori", id);
 
       if (error) throw error;
 

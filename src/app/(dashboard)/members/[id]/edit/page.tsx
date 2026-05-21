@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { createClient } from "@/lib/supabase/client";
 
 interface EditMemberPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function EditMemberPage({ params }: EditMemberPageProps) {
+  const { id } = use(params);
   const [formData, setFormData] = useState({
     nama: "",
     email: "",
@@ -31,7 +32,7 @@ export default function EditMemberPage({ params }: EditMemberPageProps) {
         const { data: member, error } = await supabase
           .from("member")
           .select("*")
-          .eq("id_member", params.id)
+          .eq("id_member", id)
           .single();
 
         if (error) throw error;
@@ -50,7 +51,7 @@ export default function EditMemberPage({ params }: EditMemberPageProps) {
     };
 
     fetchMember();
-  }, [params.id, supabase]);
+  }, [id, supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +67,7 @@ export default function EditMemberPage({ params }: EditMemberPageProps) {
           telepon: formData.telepon || null,
           alamat: formData.alamat || null,
         })
-        .eq("id_member", params.id);
+        .eq("id_member", id);
 
       if (error) throw error;
 

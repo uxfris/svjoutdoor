@@ -4,14 +4,15 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { notFound } from "next/navigation";
 
 interface PurchaseDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function PurchaseDetailPage({
   params,
 }: PurchaseDetailPageProps) {
+  const { id } = await params;
   const supabase = await createClient();
 
   const { data: purchase, error } = await supabase
@@ -28,7 +29,7 @@ export default async function PurchaseDetailPage({
       )
     `
     )
-    .eq("id_pembelian", params.id)
+    .eq("id_pembelian", id)
     .single();
 
   if (error || !purchase) {

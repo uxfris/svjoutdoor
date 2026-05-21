@@ -4,20 +4,21 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { notFound } from "next/navigation";
 
 interface EditSupplierPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditSupplierPage({
   params,
 }: EditSupplierPageProps) {
+  const { id } = await params;
   const supabase = await createClient();
 
   const { data: supplier, error } = await supabase
     .from("supplier")
     .select("*")
-    .eq("id_supplier", params.id)
+    .eq("id_supplier", id)
     .single();
 
   if (error || !supplier) {
